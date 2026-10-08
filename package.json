@@ -1,0 +1,61 @@
+{
+  "name": "kubermeister-screencasts",
+  "version": "0.0.0",
+  "description": "Promo videos of Kubermeister features, generated from committed scripts",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=24",
+    "npm": ">=11.19"
+  },
+  "scripts": {
+    "video": "tsx bin/video.ts",
+    "new": "tsx bin/new.ts",
+    "cluster": "tsx bin/cluster.ts",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@remotion/bundler": "4.0.534",
+    "@remotion/renderer": "4.0.534",
+    "@testcontainers/k3s": "12.2.0",
+    "ajv": "8.20.0",
+    "kokoro-js": "1.2.1",
+    "openai": "7.30.1",
+    "playwright": "1.64.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "remotion": "4.0.534",
+    "semver": "7.8.5",
+    "tsx": "4.23.15",
+    "yaml": "2.9.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "24.19.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@types/semver": "7.8.0",
+    "eslint": "10.12.0",
+    "eslint-config-prettier": "10.1.8",
+    "globals": "17.13.0",
+    "prettier": "3.9.9",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.1",
+    "vitest": "5.0.3"
+  },
+  "overrides": {
+    "sharp": "0.35.5"
+  },
+  "allowScripts": {
+    "cpu-features": false,
+    "esbuild": false,
+    "onnxruntime-node": false,
+    "protobufjs": false,
+    "ssh2": false
+  }
+}
