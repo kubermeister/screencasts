@@ -1,0 +1,20 @@
+id: text-size
+title: Text size
+since: 0.10.0
+formats: [video]
+theme: dark
+beats:
+  - id: intro
+    text: { kind: title, value: 'Make Kubermeister easier to read' }
+    say: 'Kubermeister 0.10 lets you choose how big the text is.'
+  - id: open-picker
+    text: { kind: caption, value: 'Settings › Appearance › Text size' }
+  - id: larger
+    text:
+      kind: callout
+      value: 'All text scales. Spacing and icons stay put.'
+      anchor: text-size-picker
+      side: auto
+    hold: 2s
+  - id: outro
+    text: { kind: end-card, value: 'Kubermeister 0.10.0 · kubermeister.dev' }
