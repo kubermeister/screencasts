@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { parseVideoArgs, USAGE, UsageError, type VideoArgs } from '../src/cli';
 import { OUT_DIR } from '../src/config';
 import { warnOnOldPlaywright } from '../src/harness/app';
-import { runVideo } from '../src/pipeline';
+import { compareVideo, runVideo } from '../src/pipeline';
 import { allVideoIds } from '../src/script';
 
 function errorMessage(error: unknown): string {
@@ -18,7 +18,7 @@ async function all(args: VideoArgs): Promise<number> {
     for (const id of ids) {
         const started = performance.now();
         try {
-            await runVideo(id, args);
+            await (args.compare ? compareVideo(id, args) : runVideo(id, args));
             if (args.open) openOutputs(id);
             results.push({ id, seconds: (performance.now() - started) / 1000 });
         } catch (error) {
@@ -54,7 +54,7 @@ async function main(): Promise<number> {
     }
     warnOnOldPlaywright();
     if (args.all) return all(args);
-    await runVideo(args.id!, args);
+    await (args.compare ? compareVideo(args.id!, args) : runVideo(args.id!, args));
     if (args.open) openOutputs(args.id!);
     return 0;
 }

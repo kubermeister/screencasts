@@ -25,8 +25,14 @@ const VOICE_TAIL_MS = 300;
 const VISIBLE_TIMEOUT_MS = 60_000;
 const ANCHOR_SAMPLE_MS = 100;
 const GLIDE_STEP_MS = 16;
+const TYPE_KEY_MS = 90;
 
 const sleep = (ms: number) => new Promise<void>((done) => setTimeout(done, ms));
+/**
+ * Steps are timed against a deadline, not a delay after each one: every mouse move and key press is
+ * a DevTools round trip of a few ms, which relative sleeps would add up into frames of drift.
+ */
+const sleepUntil = (epochMs: number) => sleep(Math.max(0, epochMs - Date.now()));
 const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
@@ -84,7 +90,7 @@ export class Stage {
             anchor: (name, locator) => this.anchor(name, locator),
             glide: (locator) => this.glide(locator),
             click: (locator) => this.click(locator),
-            type: (text) => this.window.keyboard.type(text, { delay: 90 }),
+            type: (text) => this.type(text),
             press: async (keys) => {
                 await this.window.keyboard.press(keys);
                 await sleep(200);
@@ -166,6 +172,7 @@ export class Stage {
         const from = this.position;
         const to = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
         const steps = clamp(Math.round(Math.hypot(to.x - from.x, to.y - from.y) / 18), 12, 45);
+        const start = Date.now();
         for (let i = 1; i <= steps; i++) {
             const t = easeInOut(i / steps);
             const x = from.x + (to.x - from.x) * t;
@@ -173,7 +180,15 @@ export class Stage {
             await this.window.mouse.move(x, y);
             this.position = { x, y };
             this.cursor.push({ atEpochMs: Date.now(), x, y, down: false });
-            await sleep(GLIDE_STEP_MS);
+            await sleepUntil(start + i * GLIDE_STEP_MS);
+        }
+    }
+
+    private async type(text: string): Promise<void> {
+        const start = Date.now();
+        for (const [i, key] of [...text].entries()) {
+            await this.window.keyboard.type(key);
+            await sleepUntil(start + (i + 1) * TYPE_KEY_MS);
         }
     }
 

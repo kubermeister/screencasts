@@ -1,5 +1,6 @@
 import type { VideoArgs } from './cli';
 import { UsageError } from './cli';
+import { compareFrames, compareTiming, keepPreviousFrames, MAX_BEAT_DRIFT_FRAMES, MAX_DIFF_PERCENT } from './compare';
 import { checkApp } from './harness/app';
 import { checkTools } from './preflight';
 import { record } from './record';
@@ -122,4 +123,39 @@ export async function runVideo(id: string, args: VideoArgs): Promise<void> {
     }
 
     if (!worked) console.log(`${id} is up to date`);
+}
+
+/**
+ * Renders the frames afresh and compares them with the ones the previous run left, frame by frame:
+ * the check that two runs of the same scene look the same.
+ */
+export async function compareVideo(id: string, args: VideoArgs): Promise<void> {
+    const hadPrevious = keepPreviousFrames(id);
+    await runVideo(id, { ...args, frames: true });
+    if (!hadPrevious) {
+        console.log(`${id}  compare  no earlier frames; run again to compare with these`);
+        return;
+    }
+    const diffs = compareFrames(id);
+    for (const diff of diffs) {
+        const verdict = diff.percent === null ? 'new' : diff.percent > MAX_DIFF_PERCENT ? 'DIFFERS' : 'same';
+        const percent = diff.percent === null ? '-' : `${diff.percent.toFixed(2)}%`;
+        console.log(`${id}  compare  ${diff.frame.padEnd(32)} ${percent.padStart(7)}  ${verdict}`);
+    }
+    const drifts = compareTiming(id);
+    for (const drift of drifts) {
+        const frames = drift.frames === null ? 'new' : `${drift.frames > 0 ? '+' : ''}${drift.frames} frames`;
+        const late = drift.frames !== null && Math.abs(drift.frames) > MAX_BEAT_DRIFT_FRAMES;
+        console.log(
+            `${id}  compare  beat ${drift.beat.padEnd(27)} ${frames.padStart(10)}  ${late ? 'DRIFTS' : 'same'}`,
+        );
+    }
+    const failed = diffs.filter((diff) => diff.percent !== null && diff.percent > MAX_DIFF_PERCENT);
+    const drifted = drifts.filter((drift) => drift.frames !== null && Math.abs(drift.frames) > MAX_BEAT_DRIFT_FRAMES);
+    if (failed.length > 0 || drifted.length > 0) {
+        throw new StageError(
+            `${id}  compare  ${failed.length} frame(s) differ by more than ${MAX_DIFF_PERCENT}%, ` +
+                `${drifted.length} beat(s) moved by more than ${MAX_BEAT_DRIFT_FRAMES} frames`,
+        );
+    }
 }
