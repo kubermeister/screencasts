@@ -1,0 +1,8 @@
+# expect: beats[0] (outro): an end card must be the last beat
+id: demo
+title: Demo
+since: 0.10.0
+beats:
+  - id: outro
+    text: { kind: end-card, value: 'Bye' }
+  - id: after

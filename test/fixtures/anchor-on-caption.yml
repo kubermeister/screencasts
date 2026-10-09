@@ -1,0 +1,7 @@
+# expect: anchor and side are only allowed on a callout
+id: demo
+title: Demo
+since: 0.10.0
+beats:
+  - id: intro
+    text: { kind: caption, value: 'Look', anchor: picker }

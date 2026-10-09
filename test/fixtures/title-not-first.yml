@@ -1,0 +1,8 @@
+# expect: beats[1] (later): a title must be the first beat
+id: demo
+title: Demo
+since: 0.10.0
+beats:
+  - id: intro
+  - id: later
+    text: { kind: title, value: 'Hello' }

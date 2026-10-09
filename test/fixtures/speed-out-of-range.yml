@@ -1,0 +1,8 @@
+# expect: voice.speed: must be <= 1.2
+id: demo
+title: Demo
+since: 0.10.0
+voice: { provider: kokoro, voice: af_heart, speed: 1.5 }
+beats:
+  - id: intro
+    text: { kind: title, value: 'Hello' }

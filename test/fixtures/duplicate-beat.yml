@@ -1,0 +1,7 @@
+# expect: beat id 'intro' is used twice
+id: demo
+title: Demo
+since: 0.10.0
+beats:
+  - id: intro
+  - id: intro

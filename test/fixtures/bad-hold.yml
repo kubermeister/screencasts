@@ -1,0 +1,7 @@
+# expect: must be a duration such as 1.2s or 800ms
+id: demo
+title: Demo
+since: 0.10.0
+beats:
+  - id: intro
+    hold: 2 seconds

@@ -1,0 +1,5 @@
+# expect: beats: must NOT have fewer than 1 items
+id: demo
+title: Demo
+since: 0.10.0
+beats: []

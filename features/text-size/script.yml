@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
 id: text-size
 title: Text size
 since: 0.10.0
