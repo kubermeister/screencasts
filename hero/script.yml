@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../schema/script.schema.json
+# Silent and wordless, for the top of the website: it loops, so it ends where it starts.
+id: hero
+title: Kubermeister
+since: 0.10.0
+formats: [video]
+theme: dark
+beats:
+  - id: rest
+    hold: 2s
+  - id: charts
+    hold: 2.5s
+  - id: pods
+    hold: 3s
+  - id: deployments
+    hold: 3s
+  - id: home
+    hold: 2s
