@@ -17,7 +17,9 @@ design (2026-10-08); where it is explicit, follow it, and where it is silent, as
   repository: `repo` `ci` `deps` `docs` `cli` `harness` `voice` `render` `features` `brand`.
 - **Comments explain why, not what.** Never `any` in TypeScript.
 - After every change: `npm run lint`, `npm run typecheck`, `npm run format:check`, `npm test`.
-- Secrets (API keys) come from the environment only. Never write a key to a file in the repository.
+- Secrets (API keys) come from the environment, or from the git-ignored `.env` (added after
+  Phase 11 at the maintainer's request; `.env.example` lists every variable). Never write a key to
+  a tracked file.
 
 ## 1. What this repository is
 

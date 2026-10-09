@@ -1,3 +1,5 @@
+// First: everything after it may read process.env as it loads.
+import '../src/env';
 import { clusterStatus, CONTAINER_NAME, ensureCluster, KUBECONFIG_PATH, removeCluster } from '../src/harness/cluster';
 
 const USAGE = 'Usage: npm run cluster -- up|down|status';

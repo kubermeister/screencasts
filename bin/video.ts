@@ -1,3 +1,5 @@
+// First: everything after it may read process.env as it loads.
+import '../src/env';
 import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
