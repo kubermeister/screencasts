@@ -14,6 +14,6 @@ export interface VoiceProvider {
 }
 
 /** Turns whatever a provider returned into canonical WAV and measures it. Injected so tests need no ffmpeg. */
-export type Finish = (audio: Buffer, format: 'wav' | 'pcm_s16le_44100') => Promise<Speech>;
+export type Finish = (audio: Buffer, format: 'wav' | 'pcm_s16le_24000') => Promise<Speech>;
 
 export type Fetch = typeof fetch;
