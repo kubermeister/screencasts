@@ -193,6 +193,9 @@ Rules the schema and `src/script.ts` enforce:
 - At most one `title` (must be the first beat if present) and one `end-card` (must be the last).
 - `hold`: duration `^\d+(\.\d+)?(ms|s)$`, default `1.2s` for beats with text, `0` without.
 - `say`: optional, ≤ 300 characters. Used only when `voice` is set.
+- `voices`: optional, instead of `voice` (never both): 1–8 voices to render side by side, the first
+  being the default (added after Phase 11 at the maintainer's request). `--voice all` renders every
+  one, `--voice <label>` one of them; each is its own recording, since line lengths set the timing.
 - `zoom`: optional, the name of an anchor the scene registers (added after Phase 11 at the
   maintainer's request). For that beat the 16:9 video's camera eases in on the element (a crop of
   the window's shape fitting it with 80 px of padding, at most 2.5×) and back out after; the reel
@@ -302,18 +305,28 @@ changed, print "<id> is up to date" and exit 0.
 
 ## 8. Outputs
 
+Changed after Phase 11 at the maintainer's request: every rendering is a **variant** (a theme and one
+voice), with its own folder and self-describing file names, so variants sit side by side.
+
 ```
 out/
   voice/<sha256>.wav                 # shared voice cache, with <sha256>.json { durationMs }
+  voice/names.json                   # ElevenLabs voice names, last seen
   <id>/
-    <id>-video.mp4                   # 1920×1080, 30 fps
-    <id>-reel.mp4                    # 1080×1920, 30 fps
-    <id>.vtt                         # WebVTT
-    frames/NN-<beat>.png             # with --frames: the rendered video frame 600 ms into each beat (300 ms until the Phase 9 decision)
-    footage.mp4                      # the raw recording (3200×1800, 30 fps, no cursor drawn by render)
-    timeline.json                    # see Phase 3
-    state.json                       # cache keys
+    <theme>--<voice>/                # voice = <provider>-<model>-<voice name>, or silent
+      <id>--video--<theme>--<voice>.mp4    # 1920×1080, 30 fps
+      <id>--reel--<theme>--<voice>.mp4     # 1080×1920, 30 fps
+      <id>--<theme>--<voice>.vtt           # WebVTT
+      frames/NN-<beat>.png           # with --frames: the rendered frame 600 ms into each beat
+      footage.mp4                    # the raw recording (3200×1800, 30 fps)
+      timeline.json
+      state.json                     # cache keys, per variant
 ```
+
+An ElevenLabs voice's name is read from ElevenLabs on each run (the key needs `voices_read`) and
+slugified, falling back to the last name seen, then to the id. A speed other than 1 and OpenAI
+`instructions` (as a short hash) are added to the voice part. No date and no version. `--variants`
+lists a video's variants with their sizes; `--remove <variant>` deletes one.
 
 Encoding for both formats: H.264 (`libx264`), `yuv420p`, 30 fps constant, CRF 18, `-movflags
 +faststart`, AAC 160 kb/s when there is voice, no audio track otherwise, metadata stripped

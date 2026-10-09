@@ -14,14 +14,24 @@ export interface VideoArgs {
     open: boolean;
     compare: boolean;
     theme?: Theme;
+    /** A voice's label to render, or `all`; absent renders the script's default (first) voice. */
+    voice?: string;
+    /** List the video's variants instead of rendering. */
+    variants: boolean;
+    /** Delete one variant's folder instead of rendering. */
+    remove?: string;
+    /** Skip `--all`'s confirmation; for scripts, never for agents acting on their own. */
+    yes: boolean;
 }
 
 export class UsageError extends Error {}
 
 export const USAGE = `Usage:
   npm run video -- <id> [--format video|reel] [--only record|voice|render] [--fresh] [--frames]
-                        [--open] [--theme dark|light] [--compare]
-  npm run video -- --all [same flags]`;
+                        [--open] [--theme dark|light] [--compare] [--voice <label>|all]
+  npm run video -- --all [same flags] [--yes]    asks first; --yes skips the question
+  npm run video -- <id> --variants             list the variants made so far, with their sizes
+  npm run video -- <id> --remove <variant>     delete one variant's folder`;
 
 function oneOf<T extends string>(flag: string, value: string | undefined, allowed: readonly T[]): T {
     if (value === undefined || !(allowed as readonly string[]).includes(value)) {
@@ -31,7 +41,15 @@ function oneOf<T extends string>(flag: string, value: string | undefined, allowe
 }
 
 export function parseVideoArgs(argv: readonly string[]): VideoArgs {
-    const args: VideoArgs = { all: false, fresh: false, frames: false, open: false, compare: false };
+    const args: VideoArgs = {
+        all: false,
+        fresh: false,
+        frames: false,
+        open: false,
+        compare: false,
+        variants: false,
+        yes: false,
+    };
     for (let i = 0; i < argv.length; i++) {
         const arg = argv[i]!;
         switch (arg) {
@@ -56,6 +74,20 @@ export function parseVideoArgs(argv: readonly string[]): VideoArgs {
             case '--only':
                 args.only = oneOf(arg, argv[++i], ['record', 'voice', 'render'] as const);
                 break;
+            case '--yes':
+                args.yes = true;
+                break;
+            case '--variants':
+                args.variants = true;
+                break;
+            case '--voice':
+            case '--remove': {
+                const value = argv[++i];
+                if (value === undefined || value.startsWith('-')) throw new UsageError(`${arg} takes a value`);
+                if (arg === '--voice') args.voice = value;
+                else args.remove = value;
+                break;
+            }
             case '--theme':
                 args.theme = oneOf(arg, argv[++i], ['dark', 'light'] as const);
                 break;
@@ -66,5 +98,7 @@ export function parseVideoArgs(argv: readonly string[]): VideoArgs {
         }
     }
     if (args.all === (args.id !== undefined)) throw new UsageError('Give one id, or --all');
+    if (args.remove !== undefined && args.all) throw new UsageError('--remove takes one id, not --all');
+    if (args.remove !== undefined && args.variants) throw new UsageError('--remove and --variants are separate');
     return args;
 }

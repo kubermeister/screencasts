@@ -52,7 +52,7 @@ flowchart TB
     end
 
     render -- "spoken lines mixed in at their beats" --> finalize["ffmpeg: H.264 + AAC, metadata stripped, faststart"]
-    finalize --> outputs["out/&lt;id&gt;/<br/>&lt;id&gt;-video.mp4 · &lt;id&gt;-reel.mp4 · &lt;id&gt;.vtt captions · frames/"]
+    finalize --> outputs["out/&lt;id&gt;/&lt;theme&gt;--&lt;voice&gt;/<br/>one folder per variant: video · reel · captions · frames"]
     outputs -.- state["state.json<br/>what each stage was made from"]
 ```
 
@@ -94,6 +94,9 @@ npm run video -- <id> --fresh                # ignore every cache
 npm run video -- <id> --frames               # also write out/<id>/frames/NN-<beat>.png
 npm run video -- <id> --open                 # open the outputs when done
 npm run video -- <id> --theme light          # override the script's theme for this run
+npm run video -- <id> --voice <label>|all    # one of the script's voices, or every one (default: the first)
+npm run video -- <id> --variants             # list the variants made so far, with their sizes
+npm run video -- <id> --remove <variant>     # delete one variant's folder
 npm run video -- --all                       # every folder in features/, overview/, hero/
 npm run new -- <id>                          # scaffold features/<id>/ from a template
 npm run cluster -- up|down|status            # manage the demo cluster explicitly
@@ -111,7 +114,7 @@ removes it.
 
 ### What reruns
 
-`out/<id>/state.json` remembers what each stage was made from. Without `--only` or `--fresh`, only
+Each variant's `state.json` remembers what each stage was made from. Without `--only` or `--fresh`, only
 the stages whose inputs changed run again:
 
 | Input changed                                                            | Redone                         |
@@ -177,10 +180,28 @@ voice:
   instructions: 'calm, confident developer demo' # optional, the tone; openai only
 ```
 
-**Changing the voice** (provider, voice, model, speed or instructions) or a `say` line re-synthesizes
-only the lines it affects, then re-records and re-renders the video: line lengths set the beats'
-timing. Every line stays cached in `out/voice/` by its text and voice settings, so switching back to
-a voice used before costs nothing.
+**Several voices to compare:** list them under `voices:` instead of `voice:`. The first is the
+default; the others are rendered only when asked:
+
+```yaml
+voices:
+  - provider: elevenlabs # the default
+    voice: Dhyh3AlgVPGDnVMGBox6
+    model: eleven_v4
+  - provider: elevenlabs
+    voice: Dhyh3AlgVPGDnVMGBox6
+    model: eleven_multilingual_v2
+  - provider: kokoro
+    voice: af_heart
+```
+
+`npm run video -- <id> --voice all` renders every voice, each into its own variant;
+`--voice kokoro-af-heart` renders one. Each voice is its own recording, because line lengths set the
+beats' timing, so every extra voice costs about two minutes on its first run.
+
+**Changing a voice** or a `say` line re-synthesizes only the lines it affects, then re-records and
+re-renders that variant. Every line stays cached in `out/voice/` by its text and voice settings,
+and every variant keeps its own outputs, so switching back to a voice used before costs nothing.
 
 ### Configuration
 
@@ -190,18 +211,28 @@ the shell wins over it.
 
 ## Outputs
 
+Every rendering of a video is a **variant**: its theme and one voice. Each has its own folder, and
+every file name repeats it, so a file still says what it holds once it leaves its folder:
+
 ```
 out/
   voice/<sha256>.wav                 # shared voice cache, with <sha256>.json { durationMs }
+  voice/names.json                   # ElevenLabs voice names, for when ElevenLabs cannot be asked
   <id>/
-    <id>-video.mp4                   # 1920×1080, 30 fps
-    <id>-reel.mp4                    # 1080×1920, 30 fps
-    <id>.vtt                         # WebVTT
-    frames/NN-<beat>.png             # with --frames: the frame 600 ms into each beat
-    footage.mp4                      # the raw recording (3200×1800, 30 fps)
-    timeline.json                    # beats, anchors and cursor, the contract with the renderer
-    state.json                       # cache keys
+    <theme>--<voice>/                # e.g. dark--elevenlabs-v4-female-option-1, dark--kokoro-af-heart,
+                                     #      light--silent
+      <id>--video--<theme>--<voice>.mp4   # 1920×1080, 30 fps
+      <id>--reel--<theme>--<voice>.mp4    # 1080×1920, 30 fps
+      <id>--<theme>--<voice>.vtt          # WebVTT
+      frames/NN-<beat>.png           # with --frames: the frame 600 ms into each beat
+      footage.mp4                    # the raw recording (3200×1800, 30 fps)
+      timeline.json                  # beats, anchors, cursor, focus: the contract with the renderer
+      state.json                     # cache keys
 ```
+
+The voice part is `<provider>-<model>-<voice name>`, or `silent`. An ElevenLabs voice is named by its
+name in ElevenLabs (the API key needs `voices_read`), slugified; a speed other than 1 or OpenAI
+`instructions` are added to it. Variants stay until removed with `--remove`.
 
 Both formats are H.264, `yuv420p`, 30 fps constant, CRF 18, `+faststart`, AAC 160 kb/s when there is
 voice and no audio track otherwise, metadata stripped.

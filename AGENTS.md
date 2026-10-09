@@ -20,6 +20,14 @@ features. `PLAN.md` is the design; read it before changing anything structural.
   the code reads is listed in `.env.example`; `test/repo.test.ts` checks it.
 - Dependencies are pinned to exact versions; `remotion` and every `@remotion/*` share one version.
 - Outputs (`out/`) and caches (`.cache/`) are never committed. CI never records or renders.
+- **Paid voices are the maintainer's.** A new script, or a voice added to an existing one, uses
+  Kokoro only (`provider: kokoro`, which runs locally for free); `npm run new` scaffolds one. Never
+  add or switch to `elevenlabs` or `openai`: they bill per character, and only the maintainer puts
+  them in a script.
+- **Never render every video on your own.** `npm run video -- --all` lists what it would render and
+  the paid voice characters it would spend, then asks for confirmation; without a terminal it
+  refuses unless given `--yes`. Do not pass `--yes`: ask the maintainer to run it, or render the one
+  video you changed.
 
 ## Adding a feature video
 

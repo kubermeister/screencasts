@@ -2,11 +2,11 @@
 import '../src/env';
 import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { join } from 'node:path';
 import { parseVideoArgs, USAGE, UsageError, type VideoArgs } from '../src/cli';
-import { OUT_DIR } from '../src/config';
+import { confirmAll } from '../src/confirm';
 import { warnOnOldPlaywright } from '../src/harness/app';
-import { compareVideo, runVideo } from '../src/pipeline';
+import { compareVideo, listVariants, removeVariant, runVideo } from '../src/pipeline';
+import { variantFiles, type Variant } from '../src/variant';
 import { allVideoIds } from '../src/script';
 
 function errorMessage(error: unknown): string {
@@ -16,12 +16,17 @@ function errorMessage(error: unknown): string {
 /** Every video, one after another; a failure is reported and the rest still run. */
 async function all(args: VideoArgs): Promise<number> {
     const ids = allVideoIds();
+    // Listing is harmless; rendering everything is long and can spend paid voice credits.
+    if (!args.variants) await confirmAll(ids, args);
     const results: { id: string; error?: string; seconds: number }[] = [];
     for (const id of ids) {
         const started = performance.now();
         try {
-            await (args.compare ? compareVideo(id, args) : runVideo(id, args));
-            if (args.open) openOutputs(id);
+            if (args.variants) await listVariants(id, args);
+            else {
+                const variants = await (args.compare ? compareVideo(id, args) : runVideo(id, args));
+                if (args.open) openOutputs(variants);
+            }
             results.push({ id, seconds: (performance.now() - started) / 1000 });
         } catch (error) {
             console.error(errorMessage(error));
@@ -36,11 +41,10 @@ async function all(args: VideoArgs): Promise<number> {
     return failed.length > 0 ? 1 : 0;
 }
 
-/** Opens what the run produced with macOS `open`; the outputs of a skipped stage are opened too. */
-function openOutputs(id: string): void {
-    const dir = join(OUT_DIR, id);
-    const files = [`${id}-video.mp4`, `${id}-reel.mp4`]
-        .map((file) => join(dir, file))
+/** Opens what the run covered with macOS `open`; the outputs of a skipped stage are opened too. */
+function openOutputs(variants: Variant[]): void {
+    const files = variants
+        .flatMap((variant) => (['video', 'reel'] as const).map((format) => variantFiles(variant).video(format)))
         .filter((file) => existsSync(file));
     if (files.length > 0) execFileSync('open', files);
 }
@@ -56,8 +60,13 @@ async function main(): Promise<number> {
     }
     warnOnOldPlaywright();
     if (args.all) return all(args);
-    await (args.compare ? compareVideo(args.id!, args) : runVideo(args.id!, args));
-    if (args.open) openOutputs(args.id!);
+    const id = args.id!;
+    if (args.remove !== undefined) removeVariant(id, args.remove);
+    else if (args.variants) await listVariants(id, args);
+    else {
+        const variants = await (args.compare ? compareVideo(id, args) : runVideo(id, args));
+        if (args.open) openOutputs(variants);
+    }
     return 0;
 }
 
