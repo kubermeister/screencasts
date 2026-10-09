@@ -3,6 +3,7 @@ import { parseVideoArgs, USAGE, UsageError, type VideoArgs } from '../src/cli';
 import { checkTools } from '../src/preflight';
 import { record } from '../src/record';
 import { loadScript, themeOf } from '../src/script';
+import { cachedLines, plannedLines, synthesizeLines } from '../src/voice';
 
 async function timed(id: string, stage: string, work: () => Promise<void>): Promise<void> {
     const started = performance.now();
@@ -17,12 +18,25 @@ async function timed(id: string, stage: string, work: () => Promise<void>): Prom
 
 async function video(id: string, args: VideoArgs): Promise<void> {
     const script = loadScript(id);
-    if (args.only && args.only !== 'record') {
-        throw new UsageError(`--only ${args.only} is not implemented yet`);
+    if (args.only === 'render') throw new UsageError('--only render is not implemented yet');
+    checkTools({ docker: args.only !== 'voice' });
+
+    if (args.only !== 'record' && script.voice && plannedLines(script).length > 0) {
+        await timed(id, 'voice', async () => {
+            await synthesizeLines(script, { fresh: args.fresh });
+        });
+    }
+    if (args.only === 'voice') return;
+
+    // Durations decide how long each beat waits, so a recording needs every line measured first.
+    const lines = cachedLines(script);
+    const missing = plannedLines(script).filter((line) => !lines.has(line.beatId));
+    if (missing.length > 0) {
+        throw new Error(`${id}  record  needs its voice first: run \`npm run video -- ${id} --only voice\``);
     }
     checkApp(script);
-    checkTools();
-    await timed(id, 'record', () => record(script, { theme: args.theme ?? themeOf(script), voiceMs: new Map() }));
+    const voiceMs = new Map([...lines].map(([beatId, line]) => [beatId, line.durationMs]));
+    await timed(id, 'record', () => record(script, { theme: args.theme ?? themeOf(script), voiceMs }));
 }
 
 async function main(): Promise<number> {

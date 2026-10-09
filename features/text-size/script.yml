@@ -4,6 +4,9 @@ title: Text size
 since: 0.10.0
 formats: [video]
 theme: dark
+voice:
+  provider: kokoro
+  voice: af_heart
 beats:
   - id: intro
     text: { kind: title, value: 'Make Kubermeister easier to read' }

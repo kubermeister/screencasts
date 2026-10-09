@@ -10,9 +10,9 @@ function works(command: string, args: string[]): boolean {
     }
 }
 
-/** Check 4 of the pre-flight: the tools a recording and an encode need. */
-export function checkTools(): void {
-    if (!works('docker', ['info'])) {
+/** Check 4 of the pre-flight: ffmpeg for audio and encoding, Docker only when recording. */
+export function checkTools({ docker }: { docker: boolean }): void {
+    if (docker && !works('docker', ['info'])) {
         throw new PreflightError('Docker is not reachable. Start Docker Desktop');
     }
     if (!works('ffmpeg', ['-version']) || !works('ffprobe', ['-version'])) {
