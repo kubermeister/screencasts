@@ -61,6 +61,17 @@ the stages whose inputs changed run again:
 
 If nothing changed, the CLI prints `<id> is up to date`.
 
+### Rendering
+
+Rendering uses Remotion, which downloads its own Chrome Headless Shell on the first render. If its
+download host cannot be reached from your network, point `KM_SCREENCASTS_BROWSER` at any recent
+`chrome-headless-shell`, for example Playwright's:
+
+```sh
+npx playwright install chromium-headless-shell
+export KM_SCREENCASTS_BROWSER=~/Library/Caches/ms-playwright/chromium_headless_shell-<n>/chrome-headless-shell-mac-arm64/chrome-headless-shell
+```
+
 ### Voice
 
 Voiceover is optional per feature. Kokoro runs locally and is the default; its model is downloaded

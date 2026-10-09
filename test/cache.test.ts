@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { VoiceSettings } from '../src/script';
+import { loadScript, type VoiceSettings } from '../src/script';
+import { sceneKey } from '../src/state';
 import { voiceKey } from '../src/voice/cache';
 
 const base: VoiceSettings = { provider: 'kokoro', voice: 'af_heart', speed: 1 };
@@ -27,5 +28,26 @@ describe('voiceKey', () => {
 
     it('changes with the text', () => {
         expect(voiceKey(base, 'Hello!')).not.toBe(voiceKey(base, 'Hello.'));
+    });
+});
+
+describe('sceneKey', () => {
+    const script = loadScript('text-size');
+    const theme = 'dark';
+    const silent = new Map<string, number>();
+    const key = sceneKey(script, theme, silent);
+
+    it('ignores the wording, which changes no frame of the footage', () => {
+        const reworded = structuredClone(script);
+        reworded.beats[1]!.text!.value = 'Something else entirely';
+        expect(sceneKey(reworded, theme, silent)).toBe(key);
+    });
+
+    it('changes with a hold, a voice duration and the theme', () => {
+        const held = structuredClone(script);
+        held.beats[1]!.hold = '3s';
+        expect(sceneKey(held, theme, silent)).not.toBe(key);
+        expect(sceneKey(script, theme, new Map([['intro', 4000]]))).not.toBe(key);
+        expect(sceneKey(script, 'light', silent)).not.toBe(key);
     });
 });
