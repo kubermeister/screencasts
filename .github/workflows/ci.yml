@@ -1,8 +1,8 @@
 name: CI
 
 on:
+  # Every pull request, not only those into main: phases are stacked, each on the one before.
   pull_request:
-    branches: [main]
   push:
     branches: [main]
 
