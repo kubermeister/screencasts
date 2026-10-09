@@ -167,7 +167,7 @@ voice: # optional; absent = no voiceover
 beats:
   - id: intro
     text: { kind: title, value: 'Make Kubermeister easier to read' }
-    say: 'Kubermeister 0.10 lets you choose how big the text is.'
+    say: 'Kubermeister lets you choose how big the text is.'
   - id: open-picker
     text: { kind: caption, value: 'Settings › Appearance › Text size' }
   - id: larger
@@ -178,7 +178,7 @@ beats:
       side: auto # auto | above | below | left | right
     hold: 2s
   - id: outro
-    text: { kind: end-card, value: 'Kubermeister 0.10.0 · kubermeister.dev' }
+    text: { kind: end-card, value: 'kubermeister.dev' }
 ```
 
 Rules the schema and `src/script.ts` enforce:
@@ -194,6 +194,10 @@ Rules the schema and `src/script.ts` enforce:
 - `hold`: duration `^\d+(\.\d+)?(ms|s)$`, default `1.2s` for beats with text, `0` without.
 - `say`: optional, ≤ 300 characters. Used only when `voice` is set.
 - Unknown keys are errors (`additionalProperties: false`).
+- No text and no `say` names a release (added after Phase 11 at the maintainer's request): a video
+  introduces a feature, and a version dates it. The end card is the logo and `kubermeister.dev`,
+  silent: no `say` on it.
+  `since` stays, and only gates the pre-flight. `test/script.test.ts` checks it.
 
 **Beat semantics (the contract between scene, voice and render):**
 
@@ -628,6 +632,23 @@ instructions`. Never merge.
 1. Public or private GitHub repository (Phase 1).
 2. Font licensing, if the app's font is not clearly embeddable (Phase 6).
 3. Stability options after the Phase 9 report.
+
+## Later: ideas from Remotion's ecosystem (saved 2026-10-09, not started)
+
+Ideas to come back to, raised by the maintainer. None changes the pipeline; each is a change to
+the compositions in `src/remotion/`.
+
+- **Word-by-word captions** (TikTok style), synced to the voiceover. Mostly for the reels, which
+  many people watch muted. Uses `@remotion/captions`, which is only in `node_modules` as a
+  transitive dependency today: add it pinned, at the same version as `remotion`.
+- **Transitions** between scenes or into the end card, with `@remotion/transitions` (slides,
+  wipes, fades).
+- **Livelier text motion:** spring-based pop-ins for titles and callouts instead of plain fades.
+- **Pronounce Kubermeister like Jägermeister:** koo · buh · mai · stuh. Respelling the word in the
+  spoken text did not get there (13 spellings tried with the ElevenLabs voice). Next to try: an
+  ElevenLabs pronunciation dictionary (IPA /ˈkuːbəˌmaɪstə/), or a model that honours phoneme tags.
+  Planned mechanism: a pronunciation table applied to `say` before synthesis, so the screen and
+  captions keep the real spelling.
 
 ## 12. Status
 

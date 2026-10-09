@@ -72,7 +72,6 @@ export function Video(props: RenderProps) {
         overlay = (
             <EndCard
                 value={span.value}
-                title={script.title}
                 brand={brand}
                 palette={palette}
                 fontSize={brand.sizes.endCard}

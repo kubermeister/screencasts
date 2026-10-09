@@ -29,3 +29,7 @@ npm run video -- <id> --frames       # record, voice, render; one PNG per beat i
 ```
 
 Check every beat's frame shows what its text says, and fix the scene until it does.
+
+A video introduces a feature and never names a release: no version in any `text` or `say`, and the
+end card is `kubermeister.dev` (the logo is drawn with it), never spoken. `since` only gates the
+pre-flight.

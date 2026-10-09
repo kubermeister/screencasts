@@ -1,16 +1,15 @@
 import { AbsoluteFill, Img, staticFile } from 'remotion';
 import type { Brand, Palette } from '../timing';
 
+/** The logo and the website, and nothing tying the video to a release. */
 export function EndCard({
     value,
-    title,
     opacity,
     brand,
     palette,
     fontSize,
 }: {
     value: string;
-    title: string;
     opacity: number;
     brand: Brand;
     palette: Palette;
@@ -23,14 +22,13 @@ export function EndCard({
                 backgroundColor: palette.background,
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: 36,
+                gap: 48,
                 fontFamily: brand.font.family,
                 textAlign: 'center',
                 padding: 80,
             }}
         >
-            <Img src={staticFile('logo.svg')} style={{ width: 220, height: 220 }} />
-            <div style={{ fontSize: fontSize * 0.7, fontWeight: 500, color: palette.muted }}>{title}</div>
+            <Img src={staticFile('logo.svg')} style={{ width: 240, height: 240 }} />
             <div style={{ fontSize, fontWeight: 650, letterSpacing: '-0.015em', color: palette.text }}>{value}</div>
         </AbsoluteFill>
     );
