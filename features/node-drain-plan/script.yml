@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: node-drain-plan
+title: Node drain plan
+since: 0.3.0
+formats: [video, reel]
+theme: dark
+beats:
+  - id: intro
+    text: { kind: title, value: 'Know what a drain will do first' }
+  - id: drain
+    text: { kind: caption, value: 'Nodes › orbit-node-01 › Drain' }
+  - id: plan
+    text:
+      kind: callout
+      value: 'Every pod it would evict, before anything is written'
+      anchor: drain-plan
+      side: auto
+    hold: 2.8s
+  - id: outro
+    text: { kind: end-card, value: 'Kubermeister 0.10.0 · kubermeister.dev' }

@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: manifest-review
+title: Manifest review
+since: 0.5.0
+formats: [video, reel]
+theme: dark
+beats:
+  - id: intro
+    text: { kind: title, value: 'See every edit before it is saved' }
+  - id: edit
+    text: { kind: caption, value: 'Edit the live manifest: replicas 3 → 5' }
+  - id: review
+    text:
+      kind: callout
+      value: 'Review changes shows exactly what Save would change'
+      anchor: manifest-diff
+      side: auto
+    hold: 2.6s
+  - id: outro
+    text: { kind: end-card, value: 'Kubermeister 0.10.0 · kubermeister.dev' }

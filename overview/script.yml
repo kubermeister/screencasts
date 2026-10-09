@@ -1,0 +1,50 @@
+# yaml-language-server: $schema=../schema/script.schema.json
+id: overview
+title: Kubermeister
+since: 0.10.0
+formats: [video]
+theme: dark
+beats:
+  - id: intro
+    text: { kind: title, value: 'Kubermeister: Kubernetes on your desktop' }
+    hold: 3.5s
+  - id: summary
+    text:
+      kind: callout
+      value: 'Health, usage and what needs attention, at a glance'
+      anchor: alerts
+      side: auto
+    hold: 5s
+  - id: palette
+    text: { kind: caption, value: '⌘K takes you to any screen or resource' }
+    hold: 1.5s
+  - id: deployments
+    text: { kind: caption, value: 'Every deployment, live, with scaling at hand' }
+    hold: 4.5s
+  - id: logs
+    text: { kind: caption, value: 'Logs from every pod of a workload, in one stream' }
+    hold: 7s
+  - id: compare
+    text:
+      kind: callout
+      value: 'Compare any two rollouts of a deployment'
+      anchor: revision-diff
+      side: auto
+    hold: 5s
+  - id: drain
+    text:
+      kind: callout
+      value: 'Drain a node knowing exactly what it will evict'
+      anchor: drain-plan
+      side: auto
+    hold: 5s
+  - id: review
+    text:
+      kind: callout
+      value: 'Review every manifest edit before it is saved'
+      anchor: manifest-diff
+      side: auto
+    hold: 5s
+  - id: outro
+    text: { kind: end-card, value: 'Kubermeister 0.10.0 · kubermeister.dev' }
+    hold: 2.5s
