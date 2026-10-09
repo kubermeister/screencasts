@@ -89,7 +89,7 @@ describe('ElevenLabsProvider', () => {
             speed: 0.9,
         });
         expect(calls[0]!.url).toBe(
-            'https://api.elevenlabs.io/v1/text-to-speech/JBFqnCBsd6RMkjVDRZzb?output_format=pcm_44100',
+            'https://api.elevenlabs.io/v1/text-to-speech/JBFqnCBsd6RMkjVDRZzb?output_format=pcm_24000',
         );
         expect(calls[0]!.init.method).toBe('POST');
         expect(new Headers(calls[0]!.init.headers).get('xi-api-key')).toBe('xi-test');
@@ -98,7 +98,7 @@ describe('ElevenLabsProvider', () => {
             model_id: 'eleven_multilingual_v2',
             voice_settings: { speed: 0.9 },
         });
-        expect(finish).toHaveBeenCalledWith(AUDIO, 'pcm_s16le_44100');
+        expect(finish).toHaveBeenCalledWith(AUDIO, 'pcm_s16le_24000');
         expect(speech.durationMs).toBe(1234);
     });
 

@@ -13,7 +13,7 @@ export const SAMPLE_RATE = 48_000;
 const INPUT: Record<Parameters<Finish>[1], string[]> = {
     wav: ['-f', 'wav'],
     // ElevenLabs' raw PCM carries no header to say what it is.
-    pcm_s16le_44100: ['-f', 's16le', '-ar', '44100', '-ac', '1'],
+    pcm_s16le_24000: ['-f', 's16le', '-ar', '24000', '-ac', '1'],
 };
 
 function ffmpeg(args: string[], input: Buffer): Promise<Buffer> {
