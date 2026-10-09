@@ -1,6 +1,6 @@
 import type { ElectronApplication, Locator, Page } from 'playwright';
 import { FOOTAGE, FPS, SCALE, WINDOW } from '../config';
-import { holdMs, type Script } from '../script';
+import { beatAnchors, holdMs, type Script } from '../script';
 import type { Box, CursorSample, Timeline } from '../timeline';
 import { clusterKubectl } from './cluster';
 import type { Recording } from './recorder';
@@ -53,7 +53,7 @@ export class Stage {
     private readonly cursor: (Omit<CursorSample, 'atMs'> & { atEpochMs: number })[] = [];
     private position = { x: WINDOW.width / 2, y: WINDOW.height / 2 };
     private stopSampling: (() => Promise<void>) | undefined;
-    private readonly calloutAnchors: Set<string>;
+    private readonly usedAnchors: Set<string>;
 
     constructor(
         private readonly script: Script,
@@ -62,11 +62,7 @@ export class Stage {
         /** Measured lengths of the spoken lines, by beat id; absent means silent. */
         private readonly voiceMs: ReadonlyMap<string, number>,
     ) {
-        this.calloutAnchors = new Set(
-            script.beats.flatMap((beat) =>
-                beat.text?.kind === 'callout' && beat.text.anchor ? [beat.text.anchor] : [],
-            ),
-        );
+        this.usedAnchors = new Set(script.beats.flatMap(beatAnchors));
     }
 
     enter(phase: 'run' | 'cleanup'): void {
@@ -122,7 +118,9 @@ export class Stage {
         const atEpochMs = Date.now();
         this.marked.push({ id, atEpochMs });
         await this.sampleAnchors([...this.anchors.keys()]);
-        if (beat.text?.kind === 'callout' && beat.text.anchor) this.stopSampling = this.follow(beat.text.anchor);
+        // A callout's label and a zoom both follow their element, so its box is sampled while the beat lasts.
+        const followed = beatAnchors(beat);
+        if (followed.length > 0) this.stopSampling = this.follow(followed);
 
         const voice = this.voiceMs.get(id);
         const wait = Math.max(holdMs(beat), voice === undefined ? 0 : voice + VOICE_TAIL_MS);
@@ -143,8 +141,10 @@ export class Stage {
     }
 
     private anchor(name: string, locator: Locator): void {
-        if (!this.calloutAnchors.has(name)) {
-            throw new SceneError(`anchor('${name}') is not used by any callout in ${this.script.id}/script.yml`);
+        if (!this.usedAnchors.has(name)) {
+            throw new SceneError(
+                `anchor('${name}') is not used by any callout or zoom in ${this.script.id}/script.yml`,
+            );
         }
         this.anchors.set(name, locator);
     }
@@ -165,13 +165,13 @@ export class Stage {
         );
     }
 
-    /** Samples a callout's anchor while its beat lasts, so the callout follows a box that moves. */
-    private follow(name: string): () => Promise<void> {
+    /** Samples a beat's anchors while it lasts, so a callout or a zoom follows a box that moves. */
+    private follow(names: string[]): () => Promise<void> {
         let running = true;
         const loop = (async () => {
             while (running) {
                 await sleep(ANCHOR_SAMPLE_MS);
-                if (running) await this.sampleAnchors([name]);
+                if (running) await this.sampleAnchors(names);
             }
         })();
         return async () => {

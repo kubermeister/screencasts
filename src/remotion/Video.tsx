@@ -6,12 +6,22 @@ import { EndCard } from './components/EndCard';
 import { Title } from './components/Title';
 import { useBrandFont } from './fonts';
 import { estimateLabel, layoutCallout } from './layout';
-import { boxAt, fadeOpacity, frameToMs, msToFrame, spanAt, textSpans, type RenderProps } from './timing';
+import {
+    boxAt,
+    cameraAt,
+    fadeOpacity,
+    frameToMs,
+    msToFrame,
+    spanAt,
+    textSpans,
+    zoomSpans,
+    type RenderProps,
+} from './timing';
 
 const CALLOUT_MAX_WIDTH = 640;
 const CALLOUT_PADDING = 26;
 
-/** 16:9: the footage fills the frame and the text sits over it. */
+/** 16:9: the footage fills the frame, zooming in on a beat's `zoom`, and the text sits over it. */
 export function Video(props: RenderProps) {
     const { timeline, script, brand, theme } = props;
     useBrandFont(brand);
@@ -23,8 +33,18 @@ export function Video(props: RenderProps) {
     const span = spanAt(spans, ms);
     const palette = brand.themes[theme];
     const fade = brand.durations.fadeMs;
-    // Timeline boxes are CSS px of the recorded window; the frame is wider than the window.
-    const cssToFrame = width / (timeline.footage.width / timeline.scale);
+    const zooms = useMemo(() => zoomSpans(timeline, script), [timeline, script]);
+    const windowW = timeline.footage.width / timeline.scale;
+    const windowH = timeline.footage.height / timeline.scale;
+    const camera = cameraAt(timeline, zooms, ms, {
+        maxZoom: brand.video.maxZoom,
+        padding: brand.video.zoomPadding,
+        easeMs: brand.durations.zoomEaseMs,
+    });
+    // CSS px of the recorded window → frame px, through the camera: whatever it shows fills the frame.
+    const k = width / camera.w;
+    const originX = camera.cx - camera.w / 2;
+    const originY = camera.cy - (camera.w * windowH) / windowW / 2;
     const beatStart = (id: string) => timeline.beats.find((beat) => beat.id === id)?.startMs ?? 0;
 
     let overlay = null;
@@ -49,12 +69,7 @@ export function Video(props: RenderProps) {
     } else if (span?.kind === 'callout' && span.anchor) {
         const css = boxAt(timeline.anchors[span.anchor], ms, brand.durations.calloutFollowMs);
         if (css) {
-            const anchor = {
-                x: css.x * cssToFrame,
-                y: css.y * cssToFrame,
-                w: css.w * cssToFrame,
-                h: css.h * cssToFrame,
-            };
+            const anchor = { x: (css.x - originX) * k, y: (css.y - originY) * k, w: css.w * k, h: css.h * k };
             const label = estimateLabel(span.value, brand.sizes.callout, CALLOUT_MAX_WIDTH, CALLOUT_PADDING);
             overlay = (
                 <Callout
@@ -83,7 +98,19 @@ export function Video(props: RenderProps) {
     return (
         <AbsoluteFill style={{ backgroundColor: palette.background }}>
             <Sequence durationInFrames={msToFrame(timeline.footage.durationMs, fps)}>
-                <OffthreadVideo src={props.footageUrl} muted style={{ width, height }} />
+                <AbsoluteFill style={{ overflow: 'hidden' }}>
+                    <OffthreadVideo
+                        src={props.footageUrl}
+                        muted
+                        style={{
+                            position: 'absolute',
+                            left: -originX * k,
+                            top: -originY * k,
+                            width: windowW * k,
+                            height: windowH * k,
+                        }}
+                    />
+                </AbsoluteFill>
             </Sequence>
             {props.voice.map((line) => (
                 <Sequence key={line.beatId} from={msToFrame(beatStart(line.beatId), fps)}>

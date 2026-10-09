@@ -193,6 +193,10 @@ Rules the schema and `src/script.ts` enforce:
 - At most one `title` (must be the first beat if present) and one `end-card` (must be the last).
 - `hold`: duration `^\d+(\.\d+)?(ms|s)$`, default `1.2s` for beats with text, `0` without.
 - `say`: optional, ≤ 300 characters. Used only when `voice` is set.
+- `zoom`: optional, the name of an anchor the scene registers (added after Phase 11 at the
+  maintainer's request). For that beat the 16:9 video's camera eases in on the element (a crop of
+  the window's shape fitting it with 80 px of padding, at most 2.5×) and back out after; the reel
+  crops on it as it does on a callout's element. Callouts move with the camera.
 - Unknown keys are errors (`additionalProperties: false`).
 - No text and no `say` names a release (added after Phase 11 at the maintainer's request): a video
   introduces a feature, and a version dates it. The end card is the logo and `kubermeister.dev`,
@@ -246,7 +250,7 @@ Director API (`src/harness/director.ts`), all methods on the object passed to `s
 | `app`                   | The `ElectronApplication`.                                                                                                                                                                        |
 | `goto(path)`            | Sets `location.hash` to `#<path>` (the app uses hash routing), waits 400 ms.                                                                                                                      |
 | `beat(id)`              | Records the beat start in the timeline, then waits as in section 5. Throws on an id not in the script or a repeated id.                                                                           |
-| `anchor(name, locator)` | Registers an element; its box (CSS px) is recorded at the start of every beat and every 100 ms during a callout beat. Throws if the name is not used by any callout.                              |
+| `anchor(name, locator)` | Registers an element; its box (CSS px) is recorded at the start of every beat and every 100 ms during a callout beat. Throws if the name is not used by any callout or zoom.                      |
 | `focus(locator)`        | Records what matters on screen from now on (its box, once). The reel rests on the latest focus when no callout or cursor movement needs the crop; called in `setup`, it is where the reel starts. |
 | `glide(locator)`        | Moves the drawn cursor to the element's centre: ease-in-out, steps of 16 ms, step count `clamp(round(distance/18), 12, 45)`. Waits for visibility (60 s) and scrolls into view first.             |
 | `click(locator)`        | `glide`, wait 150 ms, mouse down/up, wait 250 ms.                                                                                                                                                 |

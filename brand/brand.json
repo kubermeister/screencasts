@@ -40,7 +40,9 @@
     "height": 1080,
     "captionBottom": 96,
     "captionMaxWidth": 1400,
-    "scrimOpacity": 0.4
+    "scrimOpacity": 0.4,
+    "maxZoom": 2.5,
+    "zoomPadding": 80
   },
   "reel": {
     "width": 1080,

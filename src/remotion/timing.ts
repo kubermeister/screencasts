@@ -13,7 +13,17 @@ export interface Brand {
         reelText: number;
         reelCallout: number;
     };
-    video: { width: number; height: number; captionBottom: number; captionMaxWidth: number; scrimOpacity: number };
+    video: {
+        width: number;
+        height: number;
+        captionBottom: number;
+        captionMaxWidth: number;
+        scrimOpacity: number;
+        /** How far a beat's `zoom` may enlarge the window, as a factor. */
+        maxZoom: number;
+        /** Room kept around a zoomed element, in CSS px. */
+        zoomPadding: number;
+    };
     reel: {
         width: number;
         height: number;
@@ -205,12 +215,21 @@ export function cropHeight(width: number, aspect: number, windowHeight: number):
  * padding; while the cursor moves it is a tight crop on the cursor; otherwise it rests where the
  * cursor last was, as tall as the window, which at the start is the window's middle.
  */
-export function cropTarget(timeline: Timeline, spans: TextSpan[], ms: number, limits: CropLimits): Crop {
+export function cropTarget(
+    timeline: Timeline,
+    spans: TextSpan[],
+    ms: number,
+    limits: CropLimits,
+    zooms: ZoomSpan[] = [],
+): Crop {
     const { width, height } = windowSize(timeline);
     const resting = height / limits.aspect;
     const span = spanAt(spans, ms);
-    if (span?.kind === 'callout' && span.anchor) {
-        const box = boxAt(timeline.anchors[span.anchor], ms, 0);
+    // A zoom names what the beat is about; a callout's element is the next best thing to show.
+    const zoomed = zoomAt(zooms, ms);
+    const anchor = zoomed ?? (span?.kind === 'callout' ? span.anchor : undefined);
+    if (anchor) {
+        const box = boxAt(timeline.anchors[anchor], ms, 0);
         if (box) {
             const pad = limits.anchorPadding;
             // Wide enough for the element's width, and for its height once the width sets the height.
@@ -263,17 +282,86 @@ export function clampCrop(crop: Crop, timeline: Timeline, limits: Pick<CropLimit
  * present, which eases every pan and zoom over that time. It depends on the moment alone, so any
  * single frame renders the same as it does in the full video.
  */
-export function cropAt(timeline: Timeline, spans: TextSpan[], ms: number, limits: CropLimits): Crop {
+export function cropAt(
+    timeline: Timeline,
+    spans: TextSpan[],
+    ms: number,
+    limits: CropLimits,
+    zooms: ZoomSpan[] = [],
+): Crop {
     let total = 0;
     const sum = { cx: 0, cy: 0, w: 0 };
     for (let i = 0; i <= SMOOTHING_STEPS; i++) {
         const weight = easeInOut(1 - i / (SMOOTHING_STEPS + 1));
         const at = Math.max(0, ms - (i * limits.easeMs) / SMOOTHING_STEPS);
-        const target = clampCrop(cropTarget(timeline, spans, at, limits), timeline, limits);
+        const target = clampCrop(cropTarget(timeline, spans, at, limits, zooms), timeline, limits);
         sum.cx += target.cx * weight;
         sum.cy += target.cy * weight;
         sum.w += target.w * weight;
         total += weight;
     }
     return clampCrop({ cx: sum.cx / total, cy: sum.cy / total, w: sum.w / total }, timeline, limits);
+}
+
+/** A beat that zooms: the anchor it zooms on and when, in ms of the composition. */
+export interface ZoomSpan {
+    anchor: string;
+    startMs: number;
+    endMs: number;
+}
+
+/** Each beat with a `zoom`, for as long as the beat lasts. */
+export function zoomSpans(timeline: Timeline, script: Pick<Script, 'beats'>): ZoomSpan[] {
+    return script.beats.flatMap((beat) => {
+        const mark = timeline.beats.find((candidate) => candidate.id === beat.id);
+        return beat.zoom && mark ? [{ anchor: beat.zoom, startMs: mark.startMs, endMs: mark.endMs }] : [];
+    });
+}
+
+export function zoomAt(zooms: ZoomSpan[], ms: number): string | undefined {
+    return zooms.find((zoom) => ms >= zoom.startMs && ms < zoom.endMs)?.anchor;
+}
+
+export interface CameraLimits {
+    /** How far the 16:9 video may zoom in, as a factor of the whole window. */
+    maxZoom: number;
+    /** Room kept around a zoomed element, in CSS px. */
+    padding: number;
+    easeMs: number;
+}
+
+/**
+ * Where the 16:9 video's camera points at a moment if it could jump: the whole window, or during a
+ * zoom beat a crop of the window's own shape that fits the element and its padding.
+ */
+export function cameraTarget(timeline: Timeline, zooms: ZoomSpan[], ms: number, limits: CameraLimits): Crop {
+    const { width, height } = windowSize(timeline);
+    const whole = { cx: width / 2, cy: height / 2, w: width };
+    const anchor = zoomAt(zooms, ms);
+    const box = anchor ? boxAt(timeline.anchors[anchor], ms, 0) : undefined;
+    if (!box) return whole;
+    const pad = limits.padding;
+    const fit = Math.max(box.w + 2 * pad, ((box.h + 2 * pad) * width) / height);
+    return { cx: box.x + box.w / 2, cy: box.y + box.h / 2, w: clampTo(fit, width / limits.maxZoom, width) };
+}
+
+/**
+ * The 16:9 video's camera at a moment: like the reel's crop, the target averaged over the preceding
+ * `easeMs`, so a zoom eases in and out, and kept inside the window.
+ */
+export function cameraAt(timeline: Timeline, zooms: ZoomSpan[], ms: number, limits: CameraLimits): Crop {
+    const { width, height } = windowSize(timeline);
+    const shape = { minCropWidth: width / limits.maxZoom, aspect: height / width };
+    let total = 0;
+    const sum = { cx: 0, cy: 0, w: 0 };
+    for (let i = 0; i <= SMOOTHING_STEPS; i++) {
+        const weight = easeInOut(1 - i / (SMOOTHING_STEPS + 1));
+        const at = Math.max(0, ms - (i * limits.easeMs) / SMOOTHING_STEPS);
+        const target = clampCrop(cameraTarget(timeline, zooms, at, limits), timeline, shape);
+        sum.cx += target.cx * weight;
+        sum.cy += target.cy * weight;
+        sum.w += target.w * weight;
+        total += weight;
+    }
+    return clampCrop({ cx: sum.cx / total, cy: sum.cy / total, w: sum.w / total }, timeline, shape);
 }
