@@ -136,9 +136,51 @@ Rendering uses Remotion with a Chrome Headless Shell. The CLI takes, in order:
 
 ### Voice
 
-Voiceover is optional per feature. Kokoro runs locally and is the default; its model is downloaded
-on first use. OpenAI (`OPENAI_API_KEY`) and ElevenLabs (`ELEVENLABS_API_KEY`) read their keys from
-the environment or from `.env`.
+Voiceover is optional per video: a script without a `voice:` block is silent. With one, every beat's
+`say` line is spoken, and the beat waits for it to finish. The end card is never spoken.
+
+**Kokoro**, local and free, is the default. Its model is downloaded on the first use:
+
+```yaml
+voice:
+  provider: kokoro
+  voice: af_heart # af_ = American female, am_ = male, bf_ / bm_ = British
+  speed: 1.0 # optional, 0.8–1.2
+```
+
+Its best-rated voices are `af_heart` and `af_bella`, then `af_nicole` and `bf_emma`. The male
+voices rate lower; for a natural male voice, use ElevenLabs or OpenAI.
+
+**ElevenLabs** needs `ELEVENLABS_API_KEY` in `.env`, and a paid plan for videos you publish (the
+free plan has no commercial licence):
+
+```yaml
+voice:
+  provider: elevenlabs
+  voice: Dhyh3AlgVPGDnVMGBox6 # the Voice ID, from the voice's page in ElevenLabs
+  model: eleven_v4 # or eleven_v3, eleven_multilingual_v2
+```
+
+- Any voice works: one from the Voice Library, or one you made with Voice Design or a voice clone.
+  A Voice ID is not a secret; voices are private to the account that made them.
+- `eleven_v4` is the newest and most expressive model; `eleven_multilingual_v2` is the steadier
+  older one. Both cost about one credit per character of `say` text.
+- An API key limited to Text to Speech is enough.
+
+**OpenAI** needs `OPENAI_API_KEY` in `.env`:
+
+```yaml
+voice:
+  provider: openai
+  voice: alloy # or ash, coral, sage, verse, …
+  model: gpt-4o-mini-tts
+  instructions: 'calm, confident developer demo' # optional, the tone; openai only
+```
+
+**Changing the voice** (provider, voice, model, speed or instructions) or a `say` line re-synthesizes
+only the lines it affects, then re-records and re-renders the video: line lengths set the beats'
+timing. Every line stays cached in `out/voice/` by its text and voice settings, so switching back to
+a voice used before costs nothing.
 
 ### Configuration
 
