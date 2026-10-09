@@ -29,6 +29,8 @@ export interface Timeline {
     anchors: Record<string, { atMs: number; box: Box }[]>;
     /** What the scene said matters, each time it said so; the reel rests on the latest. */
     focus?: { atMs: number; box: Box }[];
+    /** The element each glide headed for, when it set off: what the cursor is about to touch. */
+    targets?: { atMs: number; box: Box }[];
     cursor: CursorSample[];
 }
 

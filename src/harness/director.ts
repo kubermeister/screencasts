@@ -50,6 +50,7 @@ export class Stage {
     private readonly anchors = new Map<string, Locator>();
     private readonly anchorSamples = new Map<string, { atEpochMs: number; box: Box }[]>();
     private readonly focusSamples: { atEpochMs: number; box: Box }[] = [];
+    private readonly targetSamples: { atEpochMs: number; box: Box }[] = [];
     private readonly cursor: (Omit<CursorSample, 'atMs'> & { atEpochMs: number })[] = [];
     private position = { x: WINDOW.width / 2, y: WINDOW.height / 2 };
     private stopSampling: (() => Promise<void>) | undefined;
@@ -185,6 +186,9 @@ export class Stage {
         await locator.scrollIntoViewIfNeeded();
         const box = await locator.boundingBox();
         if (!box) throw new SceneError(`glide: ${String(locator)} has no box`);
+        // The reel frames what the cursor is going to, not the bare cursor: a select is clicked in its
+        // middle but its text sits at its left edge.
+        this.targetSamples.push({ atEpochMs: Date.now(), box: { x: box.x, y: box.y, w: box.width, h: box.height } });
         const from = this.position;
         const to = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
         const steps = clamp(Math.round(Math.hypot(to.x - from.x, to.y - from.y) / 18), 12, 45);
@@ -258,6 +262,7 @@ export class Stage {
                 ]),
             ),
             focus: this.focusSamples.map((sample) => ({ atMs: rel(sample.atEpochMs), box: roundBox(sample.box) })),
+            targets: this.targetSamples.map((sample) => ({ atMs: rel(sample.atEpochMs), box: roundBox(sample.box) })),
             cursor: this.cursor.map(({ atEpochMs, x, y, down }) => ({
                 atMs: rel(atEpochMs),
                 x: Math.round(x * 10) / 10,
