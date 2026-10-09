@@ -15,8 +15,11 @@ import { serveDirectory } from './server';
 const run = promisify(execFile);
 
 const COMPOSITION: Record<Format, string> = { video: 'Video', reel: 'Reel' };
-/** A beat's frame is taken this far in, once its text has faded in. */
-const FRAME_OFFSET_MS = 300;
+/**
+ * A beat's frame is taken this far in: after its text has faded in (250 ms) and the reel's zoom has
+ * eased (400 ms), so a frame or two of timing difference between runs does not read as a change.
+ */
+const FRAME_OFFSET_MS = 600;
 
 /**
  * Remotion downloads its own Chrome Headless Shell on first use. Where its download host is not

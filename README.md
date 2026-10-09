@@ -87,7 +87,7 @@ out/
     <id>-video.mp4                   # 1920×1080, 30 fps
     <id>-reel.mp4                    # 1080×1920, 30 fps
     <id>.vtt                         # WebVTT
-    frames/NN-<beat>.png             # with --frames: the frame 300 ms into each beat
+    frames/NN-<beat>.png             # with --frames: the frame 600 ms into each beat
     footage.mp4                      # the raw recording (3200×1800, 30 fps)
     timeline.json                    # beats, anchors and cursor, the contract with the renderer
     state.json                       # cache keys

@@ -298,7 +298,7 @@ out/
     <id>-video.mp4                   # 1920×1080, 30 fps
     <id>-reel.mp4                    # 1080×1920, 30 fps
     <id>.vtt                         # WebVTT
-    frames/NN-<beat>.png             # with --frames: the rendered video frame 300 ms into each beat
+    frames/NN-<beat>.png             # with --frames: the rendered video frame 600 ms into each beat (300 ms until the Phase 9 decision)
     footage.mp4                      # the raw recording (3200×1800, 30 fps, no cursor drawn by render)
     timeline.json                    # see Phase 3
     state.json                       # cache keys
@@ -508,7 +508,7 @@ auto` picks the side with most room; follows the box samples, eased.
 - `src/render/index.ts`: bundle once per run (`@remotion/bundler`), `renderMedia` with codec
   `h264`, `crf: 18`, `pixelFormat: 'yuv420p'`, then the metadata strip of section 8 if Remotion's
   output carries metadata.
-- `captions.ts`: WebVTT as section 8. `--frames`: `renderStill` at each beat start + 300 ms.
+- `captions.ts`: WebVTT as section 8. `--frames`: `renderStill` at each beat start + 600 ms (was 300 ms; changed by the Phase 9 decision).
 
 Acceptance: `npm run video -- text-size --frames` writes `text-size-video.mp4`, `text-size.vtt`
 and four frames; each frame shows the beat's text where section 6 says; changing only a caption's
