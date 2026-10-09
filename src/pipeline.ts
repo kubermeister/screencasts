@@ -3,7 +3,7 @@ import { UsageError } from './cli';
 import { checkApp } from './harness/app';
 import { checkTools } from './preflight';
 import { record } from './record';
-import { render } from './render';
+import { removeFrames, render } from './render';
 import { formatsOf, loadScript, themeOf } from './script';
 import {
     appKey,
@@ -78,6 +78,7 @@ export async function runVideo(id: string, args: VideoArgs): Promise<void> {
         const stale = !footageExists(id) || state.app !== app || state.scene !== scene;
         if (args.only === 'record' || args.fresh || stale) {
             await timed(id, 'record', () => record(script, { theme, voiceMs }));
+            removeFrames(id);
             // The old renders were made from footage that no longer exists.
             state = { app, scene, voice: voiceKeys };
             writeState(id, state);

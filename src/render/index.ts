@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { promisify } from 'node:util';
 import { bundle } from '@remotion/bundler';
@@ -102,6 +102,8 @@ export async function render(script: Script, options: RenderOptions): Promise<vo
                 logLevel: 'error',
             });
             await finalize(raw, output);
+            // Frames of an earlier render would pass for this one's; a format's frames go with it.
+            removeFrames(script.id, format);
             if (options.frames) await renderFrames(script, timeline.beats, format, url, props, composition);
         }
     } finally {
@@ -118,6 +120,17 @@ async function finalize(raw: string, output: string): Promise<void> {
     rmSync(raw, { force: true });
 }
 
+function framePrefix(format: Format): string {
+    return format === 'video' ? '' : `${format}-`;
+}
+
+export function removeFrames(id: string, format?: Format): void {
+    const dir = join(OUT_DIR, id, 'frames');
+    if (!existsSync(dir)) return;
+    const pattern = format ? new RegExp(`^${framePrefix(format)}\\d\\d-.*\\.png$`) : /\.png$/;
+    for (const file of readdirSync(dir)) if (pattern.test(file)) rmSync(join(dir, file));
+}
+
 async function renderFrames(
     script: Script,
     beats: { id: string; startMs: number }[],
@@ -128,7 +141,7 @@ async function renderFrames(
 ): Promise<void> {
     const dir = join(OUT_DIR, script.id, 'frames');
     mkdirSync(dir, { recursive: true });
-    const prefix = format === 'video' ? '' : `${format}-`;
+    const prefix = framePrefix(format);
     for (const [i, beat] of beats.entries()) {
         const frame = Math.min(composition.durationInFrames - 1, msToFrame(beat.startMs + FRAME_OFFSET_MS, FPS));
         await renderStill({
