@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { buildVtt } from '../src/render/captions';
 import { estimateLabel, layoutCallout } from '../src/remotion/layout';
-import { boxAt, compositionMs, fadeOpacity, msToFrame, spanAt, textSpans } from '../src/remotion/timing';
+import {
+    boxAt,
+    clampViewport,
+    compositionMs,
+    fadeOpacity,
+    msToFrame,
+    spanAt,
+    textSpans,
+    viewportAt,
+} from '../src/remotion/timing';
 import type { Script } from '../src/script';
 import type { Timeline } from '../src/timeline';
 
@@ -142,5 +151,50 @@ describe('buildVtt', () => {
                 '',
             ].join('\n'),
         );
+    });
+});
+
+describe('the reel viewport', () => {
+    const limits = { maxZoomCallout: 1.8, maxZoomCursor: 1.4, easeMs: 400 };
+    const box = { x: 515, y: 516, w: 722, h: 36 };
+    const zoomed: Timeline = {
+        ...timeline,
+        anchors: { thing: [{ atMs: 4000, box }] },
+        cursor: [
+            { atMs: 0, x: 800, y: 450, down: false },
+            { atMs: 3000, x: 300, y: 200, down: false },
+            { atMs: 3100, x: 320, y: 220, down: true },
+        ],
+    };
+    const spans = textSpans(zoomed, script, 11_000);
+
+    it('shows the whole window while nothing happens', () => {
+        expect(viewportAt(zoomed, spans, 1500, limits)).toEqual({ zoom: 1, cx: 800, cy: 450 });
+    });
+
+    it('zooms onto a callout anchor as far as it fits, up to the limit', () => {
+        const view = viewportAt(zoomed, spans, 5000, limits);
+        expect(view.zoom).toBeCloseTo(Math.min(1.8, 1600 / (722 + 180)), 5);
+        expect(view.cx).toBeCloseTo(box.x + box.w / 2, 5);
+        expect(view.cy).toBeCloseTo(box.y + box.h / 2, 5);
+    });
+
+    it('follows the cursor while it moves, kept inside the window', () => {
+        const view = viewportAt(zoomed, spans, 3100, limits);
+        expect(view.zoom).toBeCloseTo(1.4, 5);
+        // 320 would put the left edge of a 1.4× view outside the window.
+        expect(view.cx).toBeCloseTo(1600 / 1.4 / 2, 5);
+    });
+
+    it('eases between targets instead of jumping', () => {
+        const zooms = [3950, 4000, 4100, 4200, 4300, 4400].map((ms) => viewportAt(zoomed, spans, ms, limits).zoom);
+        zooms.slice(1).forEach((zoom, i) => expect(zoom).toBeGreaterThanOrEqual(zooms[i]!));
+        expect(zooms[1]).toBeLessThan(1.7);
+        expect(zooms.at(-1)).toBeCloseTo(1.7738, 3);
+    });
+
+    it('never shows past the edge of the footage', () => {
+        expect(clampViewport({ zoom: 2, cx: 0, cy: 900 }, 1600, 900)).toEqual({ zoom: 2, cx: 400, cy: 675 });
+        expect(clampViewport({ zoom: 0.5, cx: 0, cy: 0 }, 1600, 900)).toEqual({ zoom: 1, cx: 800, cy: 450 });
     });
 });
