@@ -7,6 +7,68 @@ app, synthesizes the voice and renders a 16:9 video, a 9:16 reel and WebVTT capt
 
 Videos are generated locally only. Nobody edits a video by hand, and nothing in `out/` is committed.
 
+## How a video is made
+
+`npm run video -- <id>` runs three stages in order (voice, record, render), each only when what it is
+made from has changed since the last run.
+
+```mermaid
+flowchart TB
+    subgraph inputs["Inputs, committed in this repository"]
+        direction LR
+        script["features/&lt;id&gt;/script.yml<br/>beats · on-screen text · say lines · voice"]
+        scene["features/&lt;id&gt;/scene.ts<br/>Playwright steps that mark each beat"]
+        brand["brand/<br/>colours · Geist font · logo"]
+    end
+    app[("../kubermeister<br/>the app, built (out/)")]
+
+    inputs --> preflight
+    app --> preflight
+    preflight{{"Pre-flight<br/>app built and new enough · Docker · ffmpeg"}}
+
+    preflight --> voice
+    subgraph voice["1 · Voice: only lines not in the cache"]
+        direction LR
+        tts["Kokoro (local) · ElevenLabs · OpenAI<br/>one call per say line"] --> vcache[("out/voice/&lt;sha256&gt;.wav<br/>keyed by text + voice")]
+    end
+
+    voice -- "each line's length sets how long its beat waits" --> record
+    subgraph record["2 · Record: only when the app, scene, timing or theme changed"]
+        direction LR
+        cluster[("Demo k3s cluster<br/>seeded from the app's fixtures")] --> electron["Electron app<br/>1600×900 at 2× · theme · chart history"]
+        electron --> run["scene.ts drives it<br/>setup → run → cleanup<br/>beat() · anchor() · focus() · drawn cursor"]
+        run --> cdp["DevTools screencast<br/>JPEG frames → ffmpeg"]
+    end
+
+    record --> footage["footage.mp4 · 3200×1800, 30 fps<br/>timeline.json · beats, anchors, cursor, focus"]
+
+    footage --> render
+    subgraph render["3 · Render with Remotion: only when text, brand or footage changed"]
+        direction LR
+        video16["Video 16:9<br/>whole window · title, caption, callout"]
+        reel916["Reel 9:16<br/>portrait crop following callout, cursor, focus"]
+        endcard["End card<br/>logo · kubermeister.dev"]
+        video16 ~~~ reel916 ~~~ endcard
+    end
+
+    render -- "spoken lines mixed in at their beats" --> finalize["ffmpeg: H.264 + AAC, metadata stripped, faststart"]
+    finalize --> outputs["out/&lt;id&gt;/<br/>&lt;id&gt;-video.mp4 · &lt;id&gt;-reel.mp4 · &lt;id&gt;.vtt captions · frames/"]
+    outputs -.- state["state.json<br/>what each stage was made from"]
+```
+
+1. **Pre-flight** checks the app checkout is built from its current sources and is at least the
+   script's `since`, that Docker is running and that `ffmpeg` is on `PATH`.
+2. **Voice** synthesizes each `say` line that is not cached yet. A line's length decides how long
+   its beat waits, so a spoken line always finishes before the scene moves on.
+3. **Record** films the real app against a seeded demo cluster. The scene drives it with Playwright;
+   the renderer is captured over the DevTools protocol (a covered window still records), and every
+   beat, anchor box, cursor move and focus is written to `timeline.json` with its time.
+4. **Render** draws both formats with Remotion from the footage and the timeline: the text over
+   the 16:9 video, and a portrait crop that follows what matters for the 9:16 reel. The spoken
+   lines are mixed in at their beats, and the WebVTT captions are written alongside.
+5. **`state.json`** stores a hash of what each stage was made from. The next run skips every stage
+   whose inputs are unchanged (see [What reruns](#what-reruns)).
+
 ## Environment
 
 - macOS (Apple silicon, Retina), Docker Desktop running, Node 24 (`.nvmrc`), npm ≥ 11.19, `ffmpeg`
