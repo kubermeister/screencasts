@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: workload-logs
+title: Workload logs
+since: 0.4.8
+formats: [video, reel]
+theme: dark
+beats:
+  - id: intro
+    text: { kind: title, value: 'Every pod of a deployment, one log' }
+  - id: interleaved
+    text:
+      kind: callout
+      value: 'Lines from all pods, interleaved and coloured by pod'
+      anchor: log-lines
+      side: auto
+    hold: 2.4s
+  - id: highlight
+    text: { kind: caption, value: 'Highlight matches keeps every line in context' }
+  - id: errors
+    text:
+      kind: callout
+      value: 'Each ERROR lights up where it happened'
+      anchor: filter
+      side: auto
+    hold: 2.4s
+  - id: outro
+    text: { kind: end-card, value: 'Kubermeister 0.10.0 · kubermeister.dev' }

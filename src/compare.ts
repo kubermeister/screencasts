@@ -1,0 +1,74 @@
+import { cpSync, existsSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
+import pixelmatch from 'pixelmatch';
+import { PNG } from 'pngjs';
+import { OUT_DIR } from './config';
+import { readTimeline } from './timeline';
+
+/** Per-pixel colour distance below which two pixels count as the same (pixelmatch's 0–1 scale). */
+const THRESHOLD = 0.1;
+/** More differing pixels than this, in percent of a frame, fails the comparison. */
+export const MAX_DIFF_PERCENT = 2;
+
+export interface FrameDiff {
+    frame: string;
+    /** Percent of pixels that differ, or null when the frame has no counterpart to compare with. */
+    percent: number | null;
+}
+
+/** Two runs' beats may start this many frames apart and still count as the same timing. */
+export const MAX_BEAT_DRIFT_FRAMES = 2;
+
+const framesDir = (id: string) => join(OUT_DIR, id, 'frames');
+const previousDir = (id: string) => join(OUT_DIR, id, 'frames-previous');
+const previousTimeline = (id: string) => join(previousDir(id), 'timeline.json');
+
+/** Keeps this run's starting frames aside as "the previous run"; false when there are none. */
+export function keepPreviousFrames(id: string): boolean {
+    rmSync(previousDir(id), { recursive: true, force: true });
+    if (!existsSync(framesDir(id)) || readdirSync(framesDir(id)).length === 0) return false;
+    cpSync(framesDir(id), previousDir(id), { recursive: true });
+    const timeline = join(OUT_DIR, id, 'timeline.json');
+    if (existsSync(timeline)) cpSync(timeline, previousTimeline(id));
+    return true;
+}
+
+export function diffPercent(a: Buffer, b: Buffer): number {
+    const left = PNG.sync.read(a);
+    const right = PNG.sync.read(b);
+    if (left.width !== right.width || left.height !== right.height) return 100;
+    const differing = pixelmatch(left.data, right.data, null, left.width, left.height, { threshold: THRESHOLD });
+    return (differing / (left.width * left.height)) * 100;
+}
+
+/** Each frame of this run against the same frame of the previous one. */
+export function compareFrames(id: string): FrameDiff[] {
+    const files = readdirSync(framesDir(id))
+        .filter((file) => file.endsWith('.png'))
+        .sort();
+    return files.map((frame) => {
+        const previous = join(previousDir(id), frame);
+        if (!existsSync(previous)) return { frame, percent: null };
+        return { frame, percent: diffPercent(readFileSync(join(framesDir(id), frame)), readFileSync(previous)) };
+    });
+}
+
+export interface BeatDrift {
+    beat: string;
+    /** This run's start minus the previous run's, in frames; null when the beat is new. */
+    frames: number | null;
+}
+
+/** How far each beat's start moved from the previous run, in frames at the footage rate. */
+export function compareTiming(id: string): BeatDrift[] {
+    if (!existsSync(previousTimeline(id))) return [];
+    const before = readTimeline(previousTimeline(id));
+    const now = readTimeline(join(OUT_DIR, id, 'timeline.json'));
+    return now.beats.map((beat) => {
+        const earlier = before.beats.find((candidate) => candidate.id === beat.id);
+        return {
+            beat: beat.id,
+            frames: earlier ? Math.round(((beat.startMs - earlier.startMs) * now.footage.fps) / 1000) : null,
+        };
+    });
+}

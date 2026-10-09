@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: command-palette
+title: Command palette
+since: 0.2.0
+formats: [video, reel]
+theme: dark
+beats:
+  - id: intro
+    text: { kind: title, value: 'Go anywhere from the keyboard' }
+  - id: open
+    text: { kind: caption, value: 'Press ⌘K on any screen' }
+  - id: search
+    text:
+      kind: callout
+      value: 'Type a few letters of any screen or resource'
+      anchor: deployments-option
+      side: auto
+    hold: 1.6s
+  - id: arrive
+    text: { kind: caption, value: 'Straight to every deployment in the namespace' }
+    hold: 2s
+  - id: outro
+    text: { kind: end-card, value: 'Kubermeister 0.10.0 · kubermeister.dev' }
