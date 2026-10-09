@@ -94,6 +94,10 @@
           "minLength": 1,
           "maxLength": 300
         },
+        "zoom": {
+          "description": "An anchor the scene registers: both formats zoom in on it for this beat.",
+          "$ref": "#/$defs/slug"
+        },
         "hold": {
           "description": "Minimum time on the beat; 1.2s by default with text, 0 without.",
           "type": "string",

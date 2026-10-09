@@ -3,6 +3,8 @@ import { buildVtt } from '../src/render/captions';
 import { estimateLabel, layoutCallout } from '../src/remotion/layout';
 import {
     boxAt,
+    cameraAt,
+    cameraTarget,
     clampCrop,
     cropAt,
     cropHeight,
@@ -12,6 +14,7 @@ import {
     msToFrame,
     spanAt,
     textSpans,
+    zoomSpans,
 } from '../src/remotion/timing';
 import type { Script } from '../src/script';
 import type { Timeline } from '../src/timeline';
@@ -241,5 +244,58 @@ describe('the reel crop', () => {
         expect(crop.cx).toBe(250);
         expect(crop.cy).toBeCloseTo(900 - (500 * limits.aspect) / 2, 5);
         expect(clampCrop({ cx: 0, cy: 0, w: 5000 }, cropped, limits)).toEqual({ cx: 800, cy: 450, w: 1600 });
+    });
+});
+
+describe('the zoom', () => {
+    const camera = { maxZoom: 2.5, padding: 80, easeMs: 400 };
+    const picker = { x: 515, y: 516, w: 722, h: 36 };
+    const small = { x: 1200, y: 100, w: 100, h: 30 };
+    const zoomScript: Pick<Script, 'beats'> = {
+        beats: [{ id: 'intro' }, { id: 'act', zoom: 'thing' }, { id: 'look' }, { id: 'outro' }],
+    };
+    const zoomed = (box: { x: number; y: number; w: number; h: number }): Timeline => ({
+        ...timeline,
+        anchors: { thing: [{ atMs: 3000, box }] },
+    });
+
+    it('lasts as long as its beat', () => {
+        expect(zoomSpans(zoomed(picker), zoomScript)).toEqual([{ anchor: 'thing', startMs: 3000, endMs: 4000 }]);
+    });
+
+    it('shows the whole window outside a zoom beat', () => {
+        const t = zoomed(picker);
+        expect(cameraAt(t, zoomSpans(t, zoomScript), 2000, camera)).toEqual({ cx: 800, cy: 450, w: 1600 });
+    });
+
+    it('fits the element and its padding in a crop of the window’s shape', () => {
+        const t = zoomed(picker);
+        const target = cameraTarget(t, zoomSpans(t, zoomScript), 3500, camera);
+        expect(target.w).toBe(722 + 160);
+        expect([target.cx, target.cy]).toEqual([876, 534]);
+    });
+
+    it('enlarges a small element no further than the maximum zoom', () => {
+        const t = zoomed(small);
+        expect(cameraTarget(t, zoomSpans(t, zoomScript), 3500, camera).w).toBe(1600 / 2.5);
+    });
+
+    it('eases in and keeps the view inside the window', () => {
+        const t = zoomed(small);
+        const zooms = zoomSpans(t, zoomScript);
+        const widths = [3000, 3100, 3200, 3400].map((ms) => cameraAt(t, zooms, ms, camera).w);
+        widths.slice(1).forEach((w, i) => expect(w).toBeLessThanOrEqual(widths[i]! + 1e-9));
+        const settled = cameraAt(t, zooms, 3900, camera);
+        expect(settled.w).toBeCloseTo(640, 5);
+        expect(settled.cx).toBeCloseTo(1250, 5);
+        // The element sits 115 px from the top: a 360 px tall crop stops at the window's edge instead.
+        expect(settled.cy).toBeCloseTo(360 / 2, 5);
+    });
+
+    it('turns the reel to the zoomed element even without a callout', () => {
+        const t = zoomed(small);
+        const limits = { minCropWidth: 420, cursorCropWidth: 560, anchorPadding: 60, aspect: 1380 / 1080, easeMs: 400 };
+        const crop = cropTarget(t, textSpans(t, zoomScript, 11_000), 3500, limits, zoomSpans(t, zoomScript));
+        expect(crop).toEqual({ cx: 1250, cy: 115, w: 420 });
     });
 });

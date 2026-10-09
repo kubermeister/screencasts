@@ -16,6 +16,7 @@ beats:
     text: { kind: caption, value: 'Settings › Appearance › Text size' }
     say: 'Open Settings, then Appearance, and find Text size.'
   - id: larger
+    zoom: text-size-picker
     text:
       kind: callout
       value: 'All text scales. Spacing and icons stay put.'

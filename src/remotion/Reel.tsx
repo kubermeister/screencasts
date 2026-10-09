@@ -11,6 +11,7 @@ import {
     msToFrame,
     spanAt,
     textSpans,
+    zoomSpans,
     type RenderProps,
 } from './timing';
 
@@ -39,13 +40,20 @@ export function Reel(props: RenderProps) {
     const [stageTop, stageBottom] = reel.stage;
     const stageH = stageBottom - stageTop;
     const aspect = stageH / width;
-    const crop = cropAt(timeline, spans, ms, {
-        minCropWidth: reel.minCropWidth,
-        cursorCropWidth: reel.cursorCropWidth,
-        anchorPadding: reel.anchorPadding,
-        aspect,
-        easeMs: brand.durations.zoomEaseMs,
-    });
+    const zooms = useMemo(() => zoomSpans(timeline, script), [timeline, script]);
+    const crop = cropAt(
+        timeline,
+        spans,
+        ms,
+        {
+            minCropWidth: reel.minCropWidth,
+            cursorCropWidth: reel.cursorCropWidth,
+            anchorPadding: reel.anchorPadding,
+            aspect,
+            easeMs: brand.durations.zoomEaseMs,
+        },
+        zooms,
+    );
     const cropH = cropHeight(crop.w, aspect, windowH);
     // CSS px of the window → frame px.
     const k = width / crop.w;

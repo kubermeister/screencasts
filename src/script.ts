@@ -21,6 +21,8 @@ export interface Beat {
     id: string;
     text?: BeatText;
     say?: string;
+    /** An anchor the scene registers: the 16:9 video and the reel zoom in on it for this beat. */
+    zoom?: string;
     /** A duration such as `2s` or `800ms`. */
     hold?: string;
 }
@@ -58,6 +60,12 @@ export function allVideoIds(): string[] {
               .sort()
         : [];
     return [...features, ...['overview', 'hero'].filter((id) => existsSync(join(ROOT, id, 'script.yml')))];
+}
+
+/** The anchors a beat points at: its callout's and its zoom's. */
+export function beatAnchors(beat: Beat): string[] {
+    const names = [beat.text?.kind === 'callout' ? beat.text.anchor : undefined, beat.zoom];
+    return [...new Set(names.filter((name): name is string => name !== undefined))];
 }
 
 export function parseDuration(value: string): number {
