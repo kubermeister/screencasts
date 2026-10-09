@@ -621,3 +621,11 @@ instructions`. Never merge.
 1. Public or private GitHub repository (Phase 1).
 2. Font licensing, if the app's font is not clearly embeddable (Phase 6).
 3. Stability options after the Phase 9 report.
+
+## 12. Status
+
+| Phase | State | Notes                                                                                                                                                                                                                                                                                                                                 |
+| ----- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0     | done  | `media/` removed from the app checkout.                                                                                                                                                                                                                                                                                               |
+| 1     | done  | TypeScript pinned to 6.0.x: typescript-eslint supports `<6.1`. `sharp` overridden to 0.35.5: 0.34 compiles from source when Homebrew's `vips` is installed. Unneeded install scripts denied in `allowScripts`.                                                                                                                        |
+| 2     | PR    | `window.bounds` is the outer frame, so `launch` also sets the content size to exactly 1600×900 from main. A `__name` no-op is defined in main and the renderer because tsx's keepNames breaks serialized `evaluate` callbacks. Chart history is injected inside `launch`, before the theme reload, so the first read already gets it. |
