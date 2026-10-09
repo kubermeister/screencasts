@@ -2,7 +2,7 @@
 id: text-size
 title: Text size
 since: 0.10.0
-formats: [video]
+formats: [video, reel]
 theme: dark
 voice:
   provider: kokoro

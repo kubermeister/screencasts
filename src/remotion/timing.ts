@@ -151,3 +151,89 @@ export function cursorAt(samples: CursorSample[], ms: number): { x: number; y: n
     }
     return { x: prev.x, y: prev.y };
 }
+
+/** What the reel's panel shows: a zoom factor and the point of the window it is centred on, in CSS px. */
+export interface Viewport {
+    zoom: number;
+    cx: number;
+    cy: number;
+}
+
+/** Room left around a callout's anchor when the panel zooms onto it, in CSS px. */
+const ANCHOR_PADDING = 90;
+/** The cursor counts as active this long before and after a sample. */
+const CURSOR_ACTIVE_BEFORE_MS = 700;
+const CURSOR_ACTIVE_AFTER_MS = 200;
+const SMOOTHING_STEPS = 12;
+
+/**
+ * Where the panel would be at a moment if it could jump: on a callout's anchor (as close as fits,
+ * up to `maxZoomCallout`), on the cursor while it moves (up to `maxZoomCursor`), else the whole window.
+ */
+export function viewportTarget(
+    timeline: Timeline,
+    spans: TextSpan[],
+    ms: number,
+    limits: { maxZoomCallout: number; maxZoomCursor: number },
+): Viewport {
+    const width = timeline.footage.width / timeline.scale;
+    const height = timeline.footage.height / timeline.scale;
+    const whole = { zoom: 1, cx: width / 2, cy: height / 2 };
+    const span = spanAt(spans, ms);
+    if (span?.kind === 'callout' && span.anchor) {
+        const box = boxAt(timeline.anchors[span.anchor], ms, 0);
+        if (!box) return whole;
+        const fit = Math.min(width / (box.w + 2 * ANCHOR_PADDING), height / (box.h + 2 * ANCHOR_PADDING));
+        return {
+            zoom: Math.max(1, Math.min(limits.maxZoomCallout, fit)),
+            cx: box.x + box.w / 2,
+            cy: box.y + box.h / 2,
+        };
+    }
+    // The first sample is where the cursor rests at the start; only later ones are movement.
+    const moving = timeline.cursor
+        .slice(1)
+        .some((sample) => sample.atMs >= ms - CURSOR_ACTIVE_AFTER_MS && sample.atMs <= ms + CURSOR_ACTIVE_BEFORE_MS);
+    const cursor = moving ? cursorAt(timeline.cursor, ms) : undefined;
+    return cursor ? { zoom: limits.maxZoomCursor, cx: cursor.x, cy: cursor.y } : whole;
+}
+
+/** Keeps the zoomed view inside the window: no edge of the footage ever comes into the panel. */
+export function clampViewport(view: Viewport, width: number, height: number): Viewport {
+    const zoom = Math.max(1, view.zoom);
+    const halfW = width / zoom / 2;
+    const halfH = height / zoom / 2;
+    return {
+        zoom,
+        cx: Math.min(width - halfW, Math.max(halfW, view.cx)),
+        cy: Math.min(height - halfH, Math.max(halfH, view.cy)),
+    };
+}
+
+/**
+ * The panel at a moment: the target averaged over the preceding `easeMs` with weights that favour
+ * the present, which eases every change of zoom and pan over that time. It depends on the moment
+ * alone, so any single frame renders the same as it does in the full video.
+ */
+export function viewportAt(
+    timeline: Timeline,
+    spans: TextSpan[],
+    ms: number,
+    limits: { maxZoomCallout: number; maxZoomCursor: number; easeMs: number },
+): Viewport {
+    let total = 0;
+    const sum = { zoom: 0, cx: 0, cy: 0 };
+    for (let i = 0; i <= SMOOTHING_STEPS; i++) {
+        const weight = easeInOut(1 - i / (SMOOTHING_STEPS + 1));
+        const target = viewportTarget(timeline, spans, Math.max(0, ms - (i * limits.easeMs) / SMOOTHING_STEPS), limits);
+        sum.zoom += target.zoom * weight;
+        sum.cx += target.cx * weight;
+        sum.cy += target.cy * weight;
+        total += weight;
+    }
+    return clampViewport(
+        { zoom: sum.zoom / total, cx: sum.cx / total, cy: sum.cy / total },
+        timeline.footage.width / timeline.scale,
+        timeline.footage.height / timeline.scale,
+    );
+}
