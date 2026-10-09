@@ -24,4 +24,4 @@ beats:
       side: auto
     hold: 2.4s
   - id: outro
-    text: { kind: end-card, value: 'Kubermeister 0.10.0 · kubermeister.dev' }
+    text: { kind: end-card, value: 'kubermeister.dev' }

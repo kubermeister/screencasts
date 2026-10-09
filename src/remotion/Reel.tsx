@@ -162,7 +162,6 @@ export function Reel(props: RenderProps) {
             {span?.kind === 'end-card' && (
                 <EndCard
                     value={span.value}
-                    title={script.title}
                     brand={brand}
                     palette={palette}
                     fontSize={brand.sizes.endCard}

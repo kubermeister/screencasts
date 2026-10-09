@@ -20,4 +20,4 @@ beats:
     text: { kind: caption, value: 'Straight to every deployment in the namespace' }
     hold: 2s
   - id: outro
-    text: { kind: end-card, value: 'Kubermeister 0.10.0 · kubermeister.dev' }
+    text: { kind: end-card, value: 'kubermeister.dev' }

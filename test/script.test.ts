@@ -24,6 +24,24 @@ describe('every committed script', () => {
     });
 });
 
+describe('what a video says', () => {
+    // A video introduces a feature; a release number in it dates it, and every later release makes
+    // it read as out of date. `since` stays in the script, where it only gates the pre-flight.
+    it.each(allVideoIds())('%s names no release', (id) => {
+        const script = loadScript(id);
+        const versioned = script.beats.flatMap((beat) =>
+            [beat.text?.value, beat.say].filter((words) => words !== undefined && /\bv?\d+\.\d+(\.\d+)?\b/.test(words)),
+        );
+        expect(versioned).toEqual([]);
+    });
+
+    // The end card is the logo and the website, on screen; a spoken outro adds nothing to it.
+    it.each(allVideoIds())('%s ends silently', (id) => {
+        const spoken = loadScript(id).beats.filter((beat) => beat.text?.kind === 'end-card' && beat.say);
+        expect(spoken.map((beat) => beat.id)).toEqual([]);
+    });
+});
+
 describe('an invalid script', () => {
     const fixtures = readdirSync(FIXTURES).filter((file) => file.endsWith('.yml'));
 

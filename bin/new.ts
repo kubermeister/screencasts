@@ -26,7 +26,7 @@ beats:
   - id: show
     text: { kind: caption, value: 'TODO: where it is, e.g. Settings › Appearance' }
   - id: outro
-    text: { kind: end-card, value: 'Kubermeister ${since} · kubermeister.dev' }
+    text: { kind: end-card, value: 'kubermeister.dev' }
 `;
 }
 
