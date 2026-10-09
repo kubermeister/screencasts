@@ -12,6 +12,7 @@ export interface Director {
     goto(path: string): Promise<void>;
     beat(id: string): Promise<void>;
     anchor(name: string, locator: Locator): void;
+    focus(locator: Locator): Promise<void>;
     glide(locator: Locator): Promise<void>;
     click(locator: Locator): Promise<void>;
     type(text: string): Promise<void>;
@@ -48,6 +49,7 @@ export class Stage {
     private readonly marked: { id: string; atEpochMs: number }[] = [];
     private readonly anchors = new Map<string, Locator>();
     private readonly anchorSamples = new Map<string, { atEpochMs: number; box: Box }[]>();
+    private readonly focusSamples: { atEpochMs: number; box: Box }[] = [];
     private readonly cursor: (Omit<CursorSample, 'atMs'> & { atEpochMs: number })[] = [];
     private position = { x: WINDOW.width / 2, y: WINDOW.height / 2 };
     private stopSampling: (() => Promise<void>) | undefined;
@@ -88,6 +90,7 @@ export class Stage {
             goto: (path) => this.goto(path),
             beat: (id) => this.beat(id),
             anchor: (name, locator) => this.anchor(name, locator),
+            focus: (locator) => this.focus(locator),
             glide: (locator) => this.glide(locator),
             click: (locator) => this.click(locator),
             type: (text) => this.type(text),
@@ -124,6 +127,19 @@ export class Stage {
         const voice = this.voiceMs.get(id);
         const wait = Math.max(holdMs(beat), voice === undefined ? 0 : voice + VOICE_TAIL_MS);
         await sleep(Math.max(0, atEpochMs + wait - Date.now()));
+    }
+
+    /**
+     * Marks what matters on screen from now on. The 16:9 video shows the whole window anyway; the
+     * reel, which shows a crop, rests on it whenever no callout or cursor movement needs the crop.
+     * Called in setup, it is where the reel starts.
+     */
+    private async focus(locator: Locator): Promise<void> {
+        if (this.phase === 'cleanup') throw new SceneError('focus() is not allowed in cleanup()');
+        await locator.waitFor({ state: 'visible', timeout: VISIBLE_TIMEOUT_MS });
+        const box = await locator.boundingBox();
+        if (!box) throw new SceneError(`focus: ${String(locator)} has no box`);
+        this.focusSamples.push({ atEpochMs: Date.now(), box: { x: box.x, y: box.y, w: box.width, h: box.height } });
     }
 
     private anchor(name: string, locator: Locator): void {
@@ -241,6 +257,7 @@ export class Stage {
                     samples.map((sample) => ({ atMs: rel(sample.atEpochMs), box: roundBox(sample.box) })),
                 ]),
             ),
+            focus: this.focusSamples.map((sample) => ({ atMs: rel(sample.atEpochMs), box: roundBox(sample.box) })),
             cursor: this.cursor.map(({ atEpochMs, x, y, down }) => ({
                 atMs: rel(atEpochMs),
                 x: Math.round(x * 10) / 10,

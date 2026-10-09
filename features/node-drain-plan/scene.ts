@@ -3,11 +3,12 @@ import { defineScene } from '../../src/harness/scene';
 const NODE = 'orbit-node-01';
 
 export default defineScene({
-    async setup({ goto, window }) {
+    async setup({ goto, window, focus }) {
         await goto(`/overview/nodes/${NODE}`);
         await window.getByTestId('node-page').waitFor({ timeout: 30_000 });
         // The page's test id appears before its header actions have rendered.
         await window.getByRole('button', { name: 'Drain', exact: true }).waitFor({ timeout: 90_000 });
+        await focus(window.getByTestId('node-page'));
     },
     async run({ window, beat, anchor, click }) {
         anchor('drain-plan', window.getByTestId('drain-plan'));

@@ -27,6 +27,8 @@ export interface Timeline {
     /** A beat lasts from its start until the next beat starts; the last one until the footage ends. */
     beats: { id: string; startMs: number; endMs: number }[];
     anchors: Record<string, { atMs: number; box: Box }[]>;
+    /** What the scene said matters, each time it said so; the reel rests on the latest. */
+    focus?: { atMs: number; box: Box }[];
     cursor: CursorSample[];
 }
 

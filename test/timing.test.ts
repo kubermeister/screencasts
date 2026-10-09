@@ -3,13 +3,15 @@ import { buildVtt } from '../src/render/captions';
 import { estimateLabel, layoutCallout } from '../src/remotion/layout';
 import {
     boxAt,
-    clampViewport,
+    clampCrop,
+    cropAt,
+    cropHeight,
+    cropTarget,
     compositionMs,
     fadeOpacity,
     msToFrame,
     spanAt,
     textSpans,
-    viewportAt,
 } from '../src/remotion/timing';
 import type { Script } from '../src/script';
 import type { Timeline } from '../src/timeline';
@@ -154,47 +156,90 @@ describe('buildVtt', () => {
     });
 });
 
-describe('the reel viewport', () => {
-    const limits = { maxZoomCallout: 1.8, maxZoomCursor: 1.4, easeMs: 400 };
-    const box = { x: 515, y: 516, w: 722, h: 36 };
-    const zoomed: Timeline = {
+describe('the reel crop', () => {
+    // The stage is 1080×1380, so a crop as tall as the 900 px window is 704 px wide.
+    const limits = { minCropWidth: 420, cursorCropWidth: 560, anchorPadding: 60, aspect: 1380 / 1080, easeMs: 400 };
+    const resting = 900 / limits.aspect;
+    const wide = { x: 515, y: 516, w: 722, h: 36 };
+    const small = { x: 1200, y: 100, w: 100, h: 30 };
+    const cropped: Timeline = {
         ...timeline,
-        anchors: { thing: [{ atMs: 4000, box }] },
+        anchors: { thing: [{ atMs: 4000, box: wide }] },
         cursor: [
             { atMs: 0, x: 800, y: 450, down: false },
-            { atMs: 3000, x: 300, y: 200, down: false },
-            { atMs: 3100, x: 320, y: 220, down: true },
+            { atMs: 3000, x: 900, y: 300, down: false },
+            { atMs: 3100, x: 920, y: 320, down: true },
         ],
     };
-    const spans = textSpans(zoomed, script, 11_000);
+    const spans = textSpans(cropped, script, 11_000);
 
-    it('shows the whole window while nothing happens', () => {
-        expect(viewportAt(zoomed, spans, 1500, limits)).toEqual({ zoom: 1, cx: 800, cy: 450 });
+    it('is as tall as the window, in its middle, before anything happens', () => {
+        const crop = cropAt(cropped, spans, 1500, limits);
+        expect(crop.w).toBeCloseTo(resting, 5);
+        expect(cropHeight(crop.w, limits.aspect, 900)).toBeCloseTo(900, 5);
+        expect([crop.cx, crop.cy]).toEqual([800, 450]);
     });
 
-    it('zooms onto a callout anchor as far as it fits, up to the limit', () => {
-        const view = viewportAt(zoomed, spans, 5000, limits);
-        expect(view.zoom).toBeCloseTo(Math.min(1.8, 1600 / (722 + 180)), 5);
-        expect(view.cx).toBeCloseTo(box.x + box.w / 2, 5);
-        expect(view.cy).toBeCloseTo(box.y + box.h / 2, 5);
+    it('fits a callout element and its padding, widening past a portrait crop when it must', () => {
+        const crop = cropAt(cropped, spans, 5000, limits);
+        expect(crop.w).toBeCloseTo(722 + 120, 5);
+        expect(crop.cx).toBeCloseTo(wide.x + wide.w / 2, 5);
     });
 
-    it('follows the cursor while it moves, kept inside the window', () => {
-        const view = viewportAt(zoomed, spans, 3100, limits);
-        expect(view.zoom).toBeCloseTo(1.4, 5);
-        // 320 would put the left edge of a 1.4× view outside the window.
-        expect(view.cx).toBeCloseTo(1600 / 1.4 / 2, 5);
+    it('shows the top-left of a callout element far wider than a portrait crop', () => {
+        const list = { x: 220, y: 300, w: 1350, h: 380 };
+        const wideOne: Timeline = { ...cropped, anchors: { thing: [{ atMs: 4000, box: list }] } };
+        const crop = cropTarget(wideOne, textSpans(wideOne, script, 11_000), 5000, limits);
+        expect(crop.w).toBeCloseTo(resting, 5);
+        expect(crop.cx).toBeCloseTo(220 - 60 + resting / 2, 5);
+    });
+
+    it('enlarges a small element, but no further than the narrowest crop', () => {
+        const small1: Timeline = { ...cropped, anchors: { thing: [{ atMs: 4000, box: small }] } };
+        const crop = cropAt(small1, textSpans(small1, script, 11_000), 5000, limits);
+        expect(crop.w).toBeCloseTo(420, 5);
+        expect(crop.cx).toBeCloseTo(1250, 5);
+    });
+
+    it('follows the moving cursor tightly, then rests where it stopped', () => {
+        const moving = cropAt(cropped, spans, 3100, limits);
+        expect(moving.w).toBeCloseTo(560, 1);
+        const rested = cropTarget(cropped, spans, 3900, limits);
+        expect([rested.cx, rested.cy, rested.w]).toEqual([920, 320, resting]);
+    });
+
+    it('rests on what the scene focused, whole when it fits a portrait crop', () => {
+        const focused: Timeline = { ...cropped, focus: [{ atMs: 3500, box: { x: 100, y: 200, w: 300, h: 150 } }] };
+        const crop = cropTarget(focused, textSpans(focused, script, 11_000), 3900, limits);
+        expect(crop).toEqual({ cx: 250, cy: 275, w: 420 });
+    });
+
+    it('shows the top-left of a focus too wide for a portrait crop', () => {
+        const table = { x: 300, y: 100, w: 1200, h: 700 };
+        const focused: Timeline = { ...cropped, focus: [{ atMs: 3500, box: table }] };
+        const crop = cropTarget(focused, textSpans(focused, script, 11_000), 3900, limits);
+        expect(crop.w).toBeCloseTo(resting, 5);
+        expect(crop.cx).toBeCloseTo(300 - 60 + resting / 2, 5);
+        // 700 px tall plus padding fits the crop's 900 px, so only the width is aligned left.
+        expect(crop.cy).toBeCloseTo(100 + 700 / 2, 5);
+    });
+
+    it('prefers a later cursor stop to an earlier focus', () => {
+        const focused: Timeline = { ...cropped, focus: [{ atMs: 1000, box: { x: 100, y: 200, w: 300, h: 150 } }] };
+        const crop = cropTarget(focused, textSpans(focused, script, 11_000), 3900, limits);
+        expect([crop.cx, crop.cy]).toEqual([920, 320]);
     });
 
     it('eases between targets instead of jumping', () => {
-        const zooms = [3950, 4000, 4100, 4200, 4300, 4400].map((ms) => viewportAt(zoomed, spans, ms, limits).zoom);
-        zooms.slice(1).forEach((zoom, i) => expect(zoom).toBeGreaterThanOrEqual(zooms[i]!));
-        expect(zooms[1]).toBeLessThan(1.7);
-        expect(zooms.at(-1)).toBeCloseTo(1.7738, 3);
+        const widths = [3950, 4000, 4100, 4200, 4300, 4400].map((ms) => cropAt(cropped, spans, ms, limits).w);
+        widths.slice(1).forEach((w, i) => expect(w).toBeGreaterThanOrEqual(widths[i]! - 1e-9));
+        expect(widths.at(-1)).toBeCloseTo(842, 5);
     });
 
-    it('never shows past the edge of the footage', () => {
-        expect(clampViewport({ zoom: 2, cx: 0, cy: 900 }, 1600, 900)).toEqual({ zoom: 2, cx: 400, cy: 675 });
-        expect(clampViewport({ zoom: 0.5, cx: 0, cy: 0 }, 1600, 900)).toEqual({ zoom: 1, cx: 800, cy: 450 });
+    it('never shows past the edge of the window', () => {
+        const crop = clampCrop({ cx: 0, cy: 900, w: 500 }, cropped, limits);
+        expect(crop.cx).toBe(250);
+        expect(crop.cy).toBeCloseTo(900 - (500 * limits.aspect) / 2, 5);
+        expect(clampCrop({ cx: 0, cy: 0, w: 5000 }, cropped, limits)).toEqual({ cx: 800, cy: 450, w: 1600 });
     });
 });

@@ -234,19 +234,20 @@ export default defineScene({
 
 Director API (`src/harness/director.ts`), all methods on the object passed to `setup`/`run`/`cleanup`:
 
-| Method                  | Behaviour                                                                                                                                                                             |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `window`                | The Playwright `Page` of the app window.                                                                                                                                              |
-| `app`                   | The `ElectronApplication`.                                                                                                                                                            |
-| `goto(path)`            | Sets `location.hash` to `#<path>` (the app uses hash routing), waits 400 ms.                                                                                                          |
-| `beat(id)`              | Records the beat start in the timeline, then waits as in section 5. Throws on an id not in the script or a repeated id.                                                               |
-| `anchor(name, locator)` | Registers an element; its box (CSS px) is recorded at the start of every beat and every 100 ms during a callout beat. Throws if the name is not used by any callout.                  |
-| `glide(locator)`        | Moves the drawn cursor to the element's centre: ease-in-out, steps of 16 ms, step count `clamp(round(distance/18), 12, 45)`. Waits for visibility (60 s) and scrolls into view first. |
-| `click(locator)`        | `glide`, wait 150 ms, mouse down/up, wait 250 ms.                                                                                                                                     |
-| `type(text)`            | `keyboard.type` with 90 ms per key.                                                                                                                                                   |
-| `press(keys)`           | `keyboard.press`, then 200 ms.                                                                                                                                                        |
-| `hold(ms)`              | Waits.                                                                                                                                                                                |
-| `kubectl(args)`         | Runs kubectl in the demo cluster (for setup, e.g. creating a second rollout).                                                                                                         |
+| Method                  | Behaviour                                                                                                                                                                                         |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `window`                | The Playwright `Page` of the app window.                                                                                                                                                          |
+| `app`                   | The `ElectronApplication`.                                                                                                                                                                        |
+| `goto(path)`            | Sets `location.hash` to `#<path>` (the app uses hash routing), waits 400 ms.                                                                                                                      |
+| `beat(id)`              | Records the beat start in the timeline, then waits as in section 5. Throws on an id not in the script or a repeated id.                                                                           |
+| `anchor(name, locator)` | Registers an element; its box (CSS px) is recorded at the start of every beat and every 100 ms during a callout beat. Throws if the name is not used by any callout.                              |
+| `focus(locator)`        | Records what matters on screen from now on (its box, once). The reel rests on the latest focus when no callout or cursor movement needs the crop; called in `setup`, it is where the reel starts. |
+| `glide(locator)`        | Moves the drawn cursor to the element's centre: ease-in-out, steps of 16 ms, step count `clamp(round(distance/18), 12, 45)`. Waits for visibility (60 s) and scrolls into view first.             |
+| `click(locator)`        | `glide`, wait 150 ms, mouse down/up, wait 250 ms.                                                                                                                                                 |
+| `type(text)`            | `keyboard.type` with 90 ms per key.                                                                                                                                                               |
+| `press(keys)`           | `keyboard.press`, then 200 ms.                                                                                                                                                                    |
+| `hold(ms)`              | Waits.                                                                                                                                                                                            |
+| `kubectl(args)`         | Runs kubectl in the demo cluster (for setup, e.g. creating a second rollout).                                                                                                                     |
 
 At the end of `run`, the harness checks every beat in the script was marked, in order. A missing or
 out-of-order beat fails the recording naming the beat.
@@ -516,14 +517,18 @@ wording re-renders without re-recording (log shows record skipped) in under 60 s
 
 ### Phase 7: render 9:16 reel
 
-- Composition `Reel`, 1080×1920, 30 fps, layout **stacked**:
-  - Top band (y 160–560): title or current caption, 60 px, max 3 lines.
-  - Middle: the footage in a 1080-wide panel (16:9 → 1080×608), y 600–1208, with a **follow
-    zoom**: by default the whole window; during a callout beat, zoom up to 1.8× centred on the
-    anchor box; elsewhere zoom up to 1.4× following the cursor. Zoom and pan eased over 400 ms,
-    never leaving the footage bounds.
-  - Bottom band (y 1240–1600): the callout text (callouts become text here, with a small marker
-    drawn on the anchor in the panel).
+- Composition `Reel`, 1080×1920, 30 fps, layout **vertical crop** (replaced the first, stacked
+  layout at the maintainer's request on 2026-10-09: a 16:9 band in a portrait frame read as a
+  landscape video):
+  - Text band (y 160–520): title, caption or the callout's words (on a callout-coloured label),
+    60 / 50 px, max 3 lines.
+  - Stage (y 540–1920): a **portrait crop** of the window that follows what matters. During a
+    callout, it fits the anchor and 60 px of padding (at least 420 px wide), with a ring on the
+    anchor. While the cursor moves, a 560 px crop on the cursor. Otherwise it rests on the latest
+    of the scene's `focus()` and where the cursor stopped, as tall as the window. A focus too wide
+    for a portrait crop shows its top-left part. Pan and zoom eased over 400 ms, never leaving the
+    window. When the focus is wider than a portrait crop, a blurred, dimmed copy of the crop fills
+    the stage above and below. A crop shorter than the stage sits above y 1600.
   - Keep y < 160 and y > 1600 free of text: platforms overlay their own UI there.
   - End card full frame.
 - `formats: [video, reel]` for `text-size`.
@@ -640,3 +645,5 @@ instructions`. Never merge.
 | 11    | merged | kubermeister/kubermeister#566 added the Promo videos section to the app's `AGENTS.md`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 
 Phase 2's last check was run once the others were merged: `npm run cluster -- down` removed the container, its kubeconfig and its state file, and `status` reported "not running".
+
+The reel's layout was changed after Phase 11, at the maintainer's request, from the stacked 16:9 band to a vertical crop that follows the focus; see Phase 7 and `focus()` in section 6.

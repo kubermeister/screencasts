@@ -45,12 +45,13 @@
   "reel": {
     "width": 1080,
     "height": 1920,
-    "topBand": [160, 560],
-    "panel": [600, 1208],
-    "bottomBand": [1240, 1600],
+    "textBand": [160, 520],
+    "stage": [540, 1920],
+    "visibleBottom": 1600,
     "sideMargin": 64,
-    "maxZoomCallout": 1.8,
-    "maxZoomCursor": 1.4
+    "minCropWidth": 420,
+    "cursorCropWidth": 560,
+    "anchorPadding": 60
   },
   "durations": {
     "fadeMs": 250,

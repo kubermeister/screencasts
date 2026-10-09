@@ -1,9 +1,9 @@
 import { defineScene } from '../../src/harness/scene';
 
 export default defineScene({
-    async setup({ goto, window }) {
+    async setup({ goto, window, focus }) {
         await goto('/settings/appearance');
-        await window.getByRole('combobox', { name: 'Text size', exact: true }).waitFor();
+        await focus(window.getByRole('combobox', { name: 'Text size', exact: true }));
     },
     async run({ window, beat, anchor, click }) {
         const picker = window.getByRole('combobox', { name: 'Text size', exact: true });

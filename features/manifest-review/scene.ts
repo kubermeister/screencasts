@@ -3,11 +3,11 @@ import { defineScene } from '../../src/harness/scene';
 const NAMESPACE = 'production';
 
 export default defineScene({
-    async setup({ goto, window }) {
+    async setup({ goto, window, focus }) {
         await goto(`/workloads/deployments/${NAMESPACE}/checkout`);
         await window.getByTestId('deployment-page').waitFor({ timeout: 30_000 });
         await window.getByRole('tab', { name: /Manifest/ }).click();
-        await window.getByTestId('manifest-panel').waitFor({ timeout: 30_000 });
+        await focus(window.getByTestId('manifest-panel'));
     },
     async run({ window, beat, anchor, click, press, type }) {
         const panel = window.getByTestId('manifest-panel');
