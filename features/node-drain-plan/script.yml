@@ -12,7 +12,7 @@ beats:
   - id: plan
     text:
       kind: callout
-      value: 'Every pod it would evict, before anything is written'
+      value: 'How many pods it would evict, before anything is written'
       anchor: drain-plan
       side: auto
     hold: 2.8s
