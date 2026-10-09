@@ -76,7 +76,13 @@ Rendering uses Remotion with a Chrome Headless Shell. The CLI takes, in order:
 
 Voiceover is optional per feature. Kokoro runs locally and is the default; its model is downloaded
 on first use. OpenAI (`OPENAI_API_KEY`) and ElevenLabs (`ELEVENLABS_API_KEY`) read their keys from
-the environment only.
+the environment or from `.env`.
+
+### Configuration
+
+Copy `.env.example` to `.env` and fill in what you need: API keys, the app's path, the render
+browser. `.env` is git-ignored and loaded by every `npm run` command; a variable already set in
+the shell wins over it.
 
 ## Outputs
 

@@ -1,3 +1,5 @@
+// First: everything after it may read process.env as it loads.
+import '../src/env';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { ROOT } from '../src/config';
