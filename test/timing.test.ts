@@ -299,3 +299,48 @@ describe('the zoom', () => {
         expect(crop).toEqual({ cx: 1250, cy: 115, w: 420 });
     });
 });
+
+describe('the reel crop with glide targets', () => {
+    const limits = { minCropWidth: 420, cursorCropWidth: 560, anchorPadding: 60, aspect: 1380 / 1080, easeMs: 400 };
+    // A select clicked in its middle, whose text sits at its left edge.
+    const select = { x: 515, y: 516, w: 722, h: 36 };
+    const option = { x: 515, y: 560, w: 722, h: 30 };
+    const clicked: Timeline = {
+        ...timeline,
+        cursor: [
+            { atMs: 0, x: 800, y: 450, down: false },
+            { atMs: 3000, x: 860, y: 530, down: false },
+            { atMs: 3200, x: 876, y: 534, down: true },
+            { atMs: 3600, x: 876, y: 575, down: true },
+        ],
+        targets: [
+            { atMs: 2700, box: select },
+            { atMs: 3300, box: option },
+        ],
+    };
+    const spans = textSpans(
+        clicked,
+        { beats: [{ id: 'intro' }, { id: 'act' }, { id: 'look' }, { id: 'outro' }] },
+        11_000,
+    );
+
+    it('frames the whole element being clicked, not just around the cursor', () => {
+        const crop = cropTarget(clicked, spans, 3100, limits);
+        expect(crop).toEqual({ cx: 515 + 361, cy: 534, w: 722 + 120 });
+        // The select's text at its left edge is inside the crop.
+        expect(crop.cx - crop.w / 2).toBeLessThanOrEqual(select.x);
+    });
+
+    it('moves on to the next element as the cursor sets off for it', () => {
+        expect(cropTarget(clicked, spans, 3500, limits).cy).toBe(575);
+    });
+
+    it('stays on the element the cursor went to once it rests', () => {
+        expect(cropTarget(clicked, spans, 6000, limits)).toEqual({ cx: 876, cy: 575, w: 842 });
+    });
+
+    it('lets a later focus take over from the last target', () => {
+        const focused: Timeline = { ...clicked, focus: [{ atMs: 5000, box: { x: 100, y: 200, w: 300, h: 150 } }] };
+        expect(cropTarget(focused, spans, 6000, limits)).toEqual({ cx: 250, cy: 275, w: 420 });
+    });
+});

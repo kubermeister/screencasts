@@ -230,30 +230,49 @@ export function cropTarget(
     const anchor = zoomed ?? (span?.kind === 'callout' ? span.anchor : undefined);
     if (anchor) {
         const box = boxAt(timeline.anchors[anchor], ms, 0);
-        if (box) {
-            const pad = limits.anchorPadding;
-            // Wide enough for the element's width, and for its height once the width sets the height.
-            const fit = Math.max(box.w + 2 * pad, (box.h + 2 * pad) / limits.aspect);
-            if (fit > resting * WIDEST_FIT) return focusCrop(box, resting, limits, width);
-            return { cx: box.x + box.w / 2, cy: box.y + box.h / 2, w: clampTo(fit, limits.minCropWidth, width) };
-        }
+        if (box) return elementCrop(box, resting, limits, width);
     }
     // The first sample is where the cursor rests at the start; only later ones are movement.
     const moves = timeline.cursor.slice(1);
     const moving = moves.some(
         (sample) => sample.atMs >= ms - CURSOR_ACTIVE_AFTER_MS && sample.atMs <= ms + CURSOR_ACTIVE_BEFORE_MS,
     );
+    const latest = (samples: { atMs: number; box: Box }[] | undefined, until: number) =>
+        [...(samples ?? [])].reverse().find((sample) => sample.atMs <= until);
     if (moving) {
+        // The element the cursor is heading for, picked up as the glide sets off; older timelines
+        // have no targets and follow the cursor point.
+        // The current glide's target; just before the first glide of a run, the one about to start.
+        const target = latest(timeline.targets, ms) ?? latest(timeline.targets, ms + CURSOR_ACTIVE_BEFORE_MS);
+        if (target) return elementCrop(target.box, resting, limits, width);
         const cursor = cursorAt(timeline.cursor, ms)!;
         return { cx: cursor.x, cy: cursor.y, w: limits.cursorCropWidth };
     }
+    // At rest: the latest of what the scene pointed at and what the cursor last went to.
+    const focus = latest(timeline.focus, ms);
+    const target = latest(timeline.targets, ms);
+    if (target) {
+        if (focus && focus.atMs >= target.atMs) return focusCrop(focus.box, resting, limits, width);
+        return elementCrop(target.box, resting, limits, width);
+    }
+    // No targets (an older timeline): the cursor's last stop competes with the focus, by time.
     const last = [...timeline.cursor].reverse().find((sample) => sample.atMs <= ms) ?? timeline.cursor[0];
-    const focus = [...(timeline.focus ?? [])].reverse().find((sample) => sample.atMs <= ms);
-    // Whichever came last: what the scene pointed at, or where the cursor stopped.
     if (focus && (!last || focus.atMs >= last.atMs || last === timeline.cursor[0])) {
         return focusCrop(focus.box, resting, limits, width);
     }
     return { cx: last?.x ?? width / 2, cy: last?.y ?? height / 2, w: clampTo(resting, limits.minCropWidth, width) };
+}
+
+/**
+ * A crop on one element: the whole of it with padding, enlarged when it is small; one far wider than a
+ * portrait crop shows its top-left part instead of shrinking past reading.
+ */
+function elementCrop(box: Box, resting: number, limits: CropLimits, windowWidth: number): Crop {
+    const pad = limits.anchorPadding;
+    // Wide enough for the element's width, and for its height once the width sets the height.
+    const fit = Math.max(box.w + 2 * pad, (box.h + 2 * pad) / limits.aspect);
+    if (fit > resting * WIDEST_FIT) return focusCrop(box, resting, limits, windowWidth);
+    return { cx: box.x + box.w / 2, cy: box.y + box.h / 2, w: clampTo(fit, limits.minCropWidth, windowWidth) };
 }
 
 /**
