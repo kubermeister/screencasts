@@ -1,0 +1,7 @@
+# expect: must be one of title, caption, callout, end-card
+id: demo
+title: Demo
+since: 0.10.0
+beats:
+  - id: intro
+    text: { kind: subtitle, value: 'Hello' }

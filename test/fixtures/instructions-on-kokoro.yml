@@ -1,0 +1,8 @@
+# expect: voice.instructions: instructions are for openai only
+id: demo
+title: Demo
+since: 0.10.0
+voice: { provider: kokoro, voice: af_heart, instructions: 'calm' }
+beats:
+  - id: intro
+    text: { kind: title, value: 'Hello' }

@@ -1,0 +1,7 @@
+# expect: must be lowercase words joined by hyphens
+id: Demo_Video
+title: Demo
+since: 0.10.0
+beats:
+  - id: intro
+    text: { kind: title, value: 'Hello' }

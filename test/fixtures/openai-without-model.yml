@@ -1,0 +1,8 @@
+# expect: voice: this provider needs a model
+id: demo
+title: Demo
+since: 0.10.0
+voice: { provider: openai, voice: alloy }
+beats:
+  - id: intro
+    text: { kind: title, value: 'Hello' }

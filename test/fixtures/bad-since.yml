@@ -1,0 +1,7 @@
+# expect: since: must be a version X.Y.Z with no leading v
+id: demo
+title: Demo
+since: v0.10.0
+beats:
+  - id: intro
+    text: { kind: title, value: 'Hello' }

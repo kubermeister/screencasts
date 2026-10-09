@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/kubermeister/screencasts/schema/script.schema.json",
+  "title": "Kubermeister screencast script",
+  "description": "One video: its beats, the text shown on screen and the voiceover. The order of rules a schema cannot say (title first, end card last, unique beat ids, id equal to the folder) is checked by src/script.ts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "title", "since", "beats"],
+  "properties": {
+    "id": {
+      "description": "Equals the folder name.",
+      "$ref": "#/$defs/slug"
+    },
+    "title": {
+      "description": "Human title, used in the end card and logs.",
+      "type": "string",
+      "minLength": 1
+    },
+    "since": {
+      "description": "The app version that shipped the feature (semver, no leading v).",
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$"
+    },
+    "formats": {
+      "description": "Which outputs to render; both by default.",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "enum": ["video", "reel"] }
+    },
+    "theme": {
+      "description": "The app theme filmed; dark by default.",
+      "enum": ["dark", "light"]
+    },
+    "voice": { "$ref": "#/$defs/voice" },
+    "beats": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": { "$ref": "#/$defs/beat" }
+    }
+  },
+  "$defs": {
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "voice": {
+      "description": "Voiceover settings; absent means no voiceover.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "voice"],
+      "properties": {
+        "provider": { "enum": ["kokoro", "openai", "elevenlabs"] },
+        "voice": {
+          "description": "Provider-specific voice id, e.g. af_heart for Kokoro.",
+          "type": "string",
+          "minLength": 1
+        },
+        "model": {
+          "description": "Provider model; required for openai (gpt-4o-mini-tts) and elevenlabs.",
+          "type": ["string", "null"]
+        },
+        "instructions": {
+          "description": "openai only: delivery style.",
+          "type": ["string", "null"]
+        },
+        "speed": { "type": "number", "minimum": 0.8, "maximum": 1.2 }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "provider": { "enum": ["openai", "elevenlabs"] } } },
+          "then": {
+            "required": ["model"],
+            "properties": { "model": { "type": "string", "minLength": 1 } }
+          }
+        },
+        {
+          "if": { "properties": { "provider": { "not": { "const": "openai" } } } },
+          "then": { "properties": { "instructions": { "type": "null" } } }
+        }
+      ]
+    },
+    "beat": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": {
+        "id": { "$ref": "#/$defs/slug" },
+        "text": { "$ref": "#/$defs/text" },
+        "say": {
+          "description": "Spoken when the script has a voice; also the caption cue.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "hold": {
+          "description": "Minimum time on the beat; 1.2s by default with text, 0 without.",
+          "type": "string",
+          "pattern": "^\\d+(\\.\\d+)?(ms|s)$"
+        }
+      }
+    },
+    "text": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "value"],
+      "properties": {
+        "kind": { "enum": ["title", "caption", "callout", "end-card"] },
+        "value": { "type": "string", "minLength": 1 },
+        "anchor": { "$ref": "#/$defs/slug" },
+        "side": { "enum": ["auto", "above", "below", "left", "right"] }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "kind": { "const": "title" } } },
+          "then": { "properties": { "value": { "type": "string", "maxLength": 60 } } }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "caption" } } },
+          "then": { "properties": { "value": { "type": "string", "maxLength": 80 } } }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "callout" } } },
+          "then": { "required": ["anchor"], "properties": { "value": { "type": "string", "maxLength": 70 } } },
+          "else": { "not": { "anyOf": [{ "required": ["anchor"] }, { "required": ["side"] }] } }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "end-card" } } },
+          "then": { "properties": { "value": { "type": "string", "maxLength": 60 } } }
+        }
+      ]
+    }
+  }
+}

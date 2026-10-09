@@ -1,0 +1,7 @@
+# expect: beats[0] (intro).text: a callout needs an anchor
+id: demo
+title: Demo
+since: 0.10.0
+beats:
+  - id: intro
+    text: { kind: callout, value: 'Look here' }
