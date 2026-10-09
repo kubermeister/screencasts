@@ -17,12 +17,19 @@ export interface Brand {
     reel: {
         width: number;
         height: number;
-        topBand: [number, number];
-        panel: [number, number];
-        bottomBand: [number, number];
+        /** Where all of the reel's text goes, in frame px; nothing is drawn above it. */
+        textBand: [number, number];
+        /** The footage's area, in frame px. */
+        stage: [number, number];
+        /** Below this the platforms draw their own buttons, so focus stays above it. */
+        visibleBottom: number;
         sideMargin: number;
-        maxZoomCallout: number;
-        maxZoomCursor: number;
+        /** The narrowest crop of the window, in CSS px: how far a small element is enlarged. */
+        minCropWidth: number;
+        /** The crop's width while the cursor moves, in CSS px. */
+        cursorCropWidth: number;
+        /** Room kept around a callout's element inside the crop, in CSS px. */
+        anchorPadding: number;
     };
     durations: { fadeMs: number; endCardMs: number; zoomEaseMs: number; calloutFollowMs: number };
 }
@@ -152,88 +159,121 @@ export function cursorAt(samples: CursorSample[], ms: number): { x: number; y: n
     return { x: prev.x, y: prev.y };
 }
 
-/** What the reel's panel shows: a zoom factor and the point of the window it is centred on, in CSS px. */
-export interface Viewport {
-    zoom: number;
+/**
+ * The part of the window the reel shows: its centre and width in CSS px. Its height follows from the
+ * width and the stage's shape (see `cropHeight`), so a crop is always as tall as the stage allows.
+ */
+export interface Crop {
     cx: number;
     cy: number;
+    w: number;
 }
 
-/** Room left around a callout's anchor when the panel zooms onto it, in CSS px. */
-const ANCHOR_PADDING = 90;
-/** The cursor counts as active this long before and after a sample. */
+export interface CropLimits {
+    minCropWidth: number;
+    cursorCropWidth: number;
+    anchorPadding: number;
+    /** The stage's height over its width: the shape a crop takes when the window is tall enough. */
+    aspect: number;
+    easeMs: number;
+}
+
+/** The cursor counts as moving from this long before a sample to this long after it. */
 const CURSOR_ACTIVE_BEFORE_MS = 700;
 const CURSOR_ACTIVE_AFTER_MS = 200;
 const SMOOTHING_STEPS = 12;
+/**
+ * How much wider than a portrait crop a callout's element may make the crop before the crop stops
+ * fitting it and shows its top-left part instead: a whole log list or diff fitted into 1080 px is
+ * too small to read.
+ */
+const WIDEST_FIT = 1.25;
+
+const clampTo = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+function windowSize(timeline: Timeline): { width: number; height: number } {
+    return { width: timeline.footage.width / timeline.scale, height: timeline.footage.height / timeline.scale };
+}
+
+/** A crop's height for its width: the stage's shape, cut off at the window's own height. */
+export function cropHeight(width: number, aspect: number, windowHeight: number): number {
+    return Math.min(windowHeight, width * aspect);
+}
 
 /**
- * Where the panel would be at a moment if it could jump: on a callout's anchor (as close as fits,
- * up to `maxZoomCallout`), on the cursor while it moves (up to `maxZoomCursor`), else the whole window.
+ * Where the crop would be at a moment if it could jump. During a callout it fits the element and its
+ * padding; while the cursor moves it is a tight crop on the cursor; otherwise it rests where the
+ * cursor last was, as tall as the window, which at the start is the window's middle.
  */
-export function viewportTarget(
-    timeline: Timeline,
-    spans: TextSpan[],
-    ms: number,
-    limits: { maxZoomCallout: number; maxZoomCursor: number },
-): Viewport {
-    const width = timeline.footage.width / timeline.scale;
-    const height = timeline.footage.height / timeline.scale;
-    const whole = { zoom: 1, cx: width / 2, cy: height / 2 };
+export function cropTarget(timeline: Timeline, spans: TextSpan[], ms: number, limits: CropLimits): Crop {
+    const { width, height } = windowSize(timeline);
+    const resting = height / limits.aspect;
     const span = spanAt(spans, ms);
     if (span?.kind === 'callout' && span.anchor) {
         const box = boxAt(timeline.anchors[span.anchor], ms, 0);
-        if (!box) return whole;
-        const fit = Math.min(width / (box.w + 2 * ANCHOR_PADDING), height / (box.h + 2 * ANCHOR_PADDING));
-        return {
-            zoom: Math.max(1, Math.min(limits.maxZoomCallout, fit)),
-            cx: box.x + box.w / 2,
-            cy: box.y + box.h / 2,
-        };
+        if (box) {
+            const pad = limits.anchorPadding;
+            // Wide enough for the element's width, and for its height once the width sets the height.
+            const fit = Math.max(box.w + 2 * pad, (box.h + 2 * pad) / limits.aspect);
+            if (fit > resting * WIDEST_FIT) return focusCrop(box, resting, limits, width);
+            return { cx: box.x + box.w / 2, cy: box.y + box.h / 2, w: clampTo(fit, limits.minCropWidth, width) };
+        }
     }
     // The first sample is where the cursor rests at the start; only later ones are movement.
-    const moving = timeline.cursor
-        .slice(1)
-        .some((sample) => sample.atMs >= ms - CURSOR_ACTIVE_AFTER_MS && sample.atMs <= ms + CURSOR_ACTIVE_BEFORE_MS);
-    const cursor = moving ? cursorAt(timeline.cursor, ms) : undefined;
-    return cursor ? { zoom: limits.maxZoomCursor, cx: cursor.x, cy: cursor.y } : whole;
-}
-
-/** Keeps the zoomed view inside the window: no edge of the footage ever comes into the panel. */
-export function clampViewport(view: Viewport, width: number, height: number): Viewport {
-    const zoom = Math.max(1, view.zoom);
-    const halfW = width / zoom / 2;
-    const halfH = height / zoom / 2;
-    return {
-        zoom,
-        cx: Math.min(width - halfW, Math.max(halfW, view.cx)),
-        cy: Math.min(height - halfH, Math.max(halfH, view.cy)),
-    };
+    const moves = timeline.cursor.slice(1);
+    const moving = moves.some(
+        (sample) => sample.atMs >= ms - CURSOR_ACTIVE_AFTER_MS && sample.atMs <= ms + CURSOR_ACTIVE_BEFORE_MS,
+    );
+    if (moving) {
+        const cursor = cursorAt(timeline.cursor, ms)!;
+        return { cx: cursor.x, cy: cursor.y, w: limits.cursorCropWidth };
+    }
+    const last = [...timeline.cursor].reverse().find((sample) => sample.atMs <= ms) ?? timeline.cursor[0];
+    const focus = [...(timeline.focus ?? [])].reverse().find((sample) => sample.atMs <= ms);
+    // Whichever came last: what the scene pointed at, or where the cursor stopped.
+    if (focus && (!last || focus.atMs >= last.atMs || last === timeline.cursor[0])) {
+        return focusCrop(focus.box, resting, limits, width);
+    }
+    return { cx: last?.x ?? width / 2, cy: last?.y ?? height / 2, w: clampTo(resting, limits.minCropWidth, width) };
 }
 
 /**
- * The panel at a moment: the target averaged over the preceding `easeMs` with weights that favour
- * the present, which eases every change of zoom and pan over that time. It depends on the moment
- * alone, so any single frame renders the same as it does in the full video.
+ * A crop on something the scene said matters: the whole of it when it fits a portrait crop, else its
+ * top-left part, where reading starts, rather than a wide crop of it too small to read.
  */
-export function viewportAt(
-    timeline: Timeline,
-    spans: TextSpan[],
-    ms: number,
-    limits: { maxZoomCallout: number; maxZoomCursor: number; easeMs: number },
-): Viewport {
+function focusCrop(box: Box, resting: number, limits: CropLimits, windowWidth: number): Crop {
+    const pad = limits.anchorPadding;
+    const w = clampTo(Math.min(box.w + 2 * pad, resting), limits.minCropWidth, windowWidth);
+    const h = w * limits.aspect;
+    const cx = box.w + 2 * pad <= w ? box.x + box.w / 2 : box.x - pad + w / 2;
+    const cy = box.h + 2 * pad <= h ? box.y + box.h / 2 : box.y - pad + h / 2;
+    return { cx, cy, w };
+}
+
+/** Keeps the crop inside the window: no edge of the footage ever comes into view. */
+export function clampCrop(crop: Crop, timeline: Timeline, limits: Pick<CropLimits, 'minCropWidth' | 'aspect'>): Crop {
+    const { width, height } = windowSize(timeline);
+    const w = clampTo(crop.w, limits.minCropWidth, width);
+    const h = cropHeight(w, limits.aspect, height);
+    return { w, cx: clampTo(crop.cx, w / 2, width - w / 2), cy: clampTo(crop.cy, h / 2, height - h / 2) };
+}
+
+/**
+ * The crop at a moment: the target averaged over the preceding `easeMs` with weights that favour the
+ * present, which eases every pan and zoom over that time. It depends on the moment alone, so any
+ * single frame renders the same as it does in the full video.
+ */
+export function cropAt(timeline: Timeline, spans: TextSpan[], ms: number, limits: CropLimits): Crop {
     let total = 0;
-    const sum = { zoom: 0, cx: 0, cy: 0 };
+    const sum = { cx: 0, cy: 0, w: 0 };
     for (let i = 0; i <= SMOOTHING_STEPS; i++) {
         const weight = easeInOut(1 - i / (SMOOTHING_STEPS + 1));
-        const target = viewportTarget(timeline, spans, Math.max(0, ms - (i * limits.easeMs) / SMOOTHING_STEPS), limits);
-        sum.zoom += target.zoom * weight;
+        const at = Math.max(0, ms - (i * limits.easeMs) / SMOOTHING_STEPS);
+        const target = clampCrop(cropTarget(timeline, spans, at, limits), timeline, limits);
         sum.cx += target.cx * weight;
         sum.cy += target.cy * weight;
+        sum.w += target.w * weight;
         total += weight;
     }
-    return clampViewport(
-        { zoom: sum.zoom / total, cx: sum.cx / total, cy: sum.cy / total },
-        timeline.footage.width / timeline.scale,
-        timeline.footage.height / timeline.scale,
-    );
+    return clampCrop({ cx: sum.cx / total, cy: sum.cy / total, w: sum.w / total }, timeline, limits);
 }
