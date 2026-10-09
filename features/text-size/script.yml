@@ -13,12 +13,15 @@ beats:
     say: 'Kubermeister 0.10 lets you choose how big the text is.'
   - id: open-picker
     text: { kind: caption, value: 'Settings › Appearance › Text size' }
+    say: 'Open Settings, then Appearance, and find Text size.'
   - id: larger
     text:
       kind: callout
       value: 'All text scales. Spacing and icons stay put.'
       anchor: text-size-picker
       side: auto
+    say: 'Pick Larger, and every piece of text grows, while spacing and icons stay exactly where they were.'
     hold: 2s
   - id: outro
     text: { kind: end-card, value: 'Kubermeister 0.10.0 · kubermeister.dev' }
+    say: 'Kubermeister 0.10. Get it at kubermeister dot dev.'
