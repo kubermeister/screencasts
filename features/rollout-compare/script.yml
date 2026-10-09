@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: rollout-compare
+title: Rollout compare
+since: 0.3.0
+formats: [video, reel]
+theme: dark
+beats:
+  - id: intro
+    text: { kind: title, value: 'Compare any two rollouts' }
+  - id: history
+    text: { kind: caption, value: 'Deployment › History lists every revision' }
+  - id: pick
+    text: { kind: caption, value: 'Pick a From and a To revision' }
+  - id: diff
+    text:
+      kind: callout
+      value: 'Only what changed between them: here, the restart'
+      anchor: revision-diff
+      side: auto
+    hold: 2.6s
+  - id: outro
+    text: { kind: end-card, value: 'Kubermeister 0.10.0 · kubermeister.dev' }
