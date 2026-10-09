@@ -9,6 +9,7 @@ import type { Format, Script } from '../script';
 import { readTimeline } from '../timeline';
 import type { CachedLine } from '../voice/cache';
 import { compositionMs, msToFrame, type Brand, type RenderProps } from '../remotion/timing';
+import { renderBrowser } from './browser';
 import { buildVtt } from './captions';
 import { serveDirectory } from './server';
 
@@ -21,12 +22,7 @@ const COMPOSITION: Record<Format, string> = { video: 'Video', reel: 'Reel' };
  */
 const FRAME_OFFSET_MS = 600;
 
-/**
- * Remotion downloads its own Chrome Headless Shell on first use. Where its download host is not
- * reachable, any recent chrome-headless-shell works, e.g. Playwright's
- * (`npx playwright install chromium-headless-shell`).
- */
-const browserExecutable = process.env.KM_SCREENCASTS_BROWSER ?? null;
+const browserExecutable = renderBrowser();
 
 let bundled: Promise<string> | undefined;
 
