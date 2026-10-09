@@ -20,6 +20,10 @@ title: ${title(id)}
 since: ${since}
 formats: [video, reel]
 theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice:
+  provider: kokoro
+  voice: af_heart
 beats:
   - id: intro
     text: { kind: title, value: 'TODO: what the feature lets you do' }

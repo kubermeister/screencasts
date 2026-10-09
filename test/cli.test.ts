@@ -16,7 +16,17 @@ describe('parseVideoArgs', () => {
         expect(parseVideoArgs(['--all', '--fresh'])).toMatchObject({ all: true, fresh: true });
     });
 
+    it('reads the voice, variants and remove options', () => {
+        expect(parseVideoArgs(['text-size', '--voice', 'all'])).toMatchObject({ voice: 'all' });
+        expect(parseVideoArgs(['text-size', '--variants'])).toMatchObject({ variants: true });
+        expect(parseVideoArgs(['text-size', '--remove', 'dark--silent'])).toMatchObject({ remove: 'dark--silent' });
+    });
+
     it.each([
+        [['a', '--voice']],
+        [['a', '--remove', '--fresh']],
+        [['--all', '--remove', 'x']],
+        [['a', '--variants', '--remove', 'x']],
         [[]],
         [['a', 'b']],
         [['a', '--all']],

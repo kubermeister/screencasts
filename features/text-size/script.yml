@@ -4,10 +4,16 @@ title: Text size
 since: 0.10.0
 formats: [video, reel]
 theme: dark
-voice:
-  provider: elevenlabs
-  voice: Dq9ukwWtibvVfUTDy0g1
-  model: eleven_multilingual_v2
+# The first voice is the default; `npm run video -- text-size --voice all` renders all three.
+voices:
+  - provider: elevenlabs
+    voice: Dhyh3AlgVPGDnVMGBox6
+    model: eleven_v4
+  - provider: elevenlabs
+    voice: Dhyh3AlgVPGDnVMGBox6
+    model: eleven_multilingual_v2
+  - provider: kokoro
+    voice: af_heart
 beats:
   - id: intro
     text: { kind: title, value: 'Make Kubermeister easier to read' }

@@ -10,6 +10,7 @@ import { readTimeline } from '../timeline';
 import type { CachedLine } from '../voice/cache';
 import { compositionMs, msToFrame, type Brand, type RenderProps } from '../remotion/timing';
 import { renderBrowser } from './browser';
+import { variantFiles, type Variant } from '../variant';
 import { buildVtt } from './captions';
 import { serveDirectory } from './server';
 
@@ -41,20 +42,21 @@ export function readBrand(): Brand {
 }
 
 export interface RenderOptions {
+    variant: Variant;
     formats: Format[];
     theme: Theme;
     voice: ReadonlyMap<string, CachedLine>;
     frames: boolean;
 }
 
-/** Renders each format from out/<id>/footage.mp4 + timeline.json, and writes the captions. */
+/** Renders each format from the variant's footage.mp4 + timeline.json, and writes its captions. */
 export async function render(script: Script, options: RenderOptions): Promise<void> {
-    const outDir = join(OUT_DIR, script.id);
-    const timeline = readTimeline(join(outDir, 'timeline.json'));
+    const files = variantFiles(options.variant);
+    const timeline = readTimeline(files.timeline);
     const brand = readBrand();
     const totalMs = compositionMs(timeline, script, brand.durations.endCardMs);
 
-    writeFileSync(join(outDir, `${script.id}.vtt`), buildVtt(timeline, script, totalMs));
+    writeFileSync(files.captions, buildVtt(timeline, script, totalMs));
 
     const assets = await serveDirectory(OUT_DIR);
     try {
@@ -63,7 +65,7 @@ export async function render(script: Script, options: RenderOptions): Promise<vo
             script: { id: script.id, title: script.title, beats: script.beats },
             theme: options.theme,
             brand,
-            footageUrl: assets.url(relative(OUT_DIR, join(outDir, timeline.footage.file))),
+            footageUrl: assets.url(relative(OUT_DIR, join(options.variant.dir, timeline.footage.file))),
             voice: [...options.voice].map(([beatId, line]) => ({
                 beatId,
                 url: assets.url(relative(OUT_DIR, line.file)),
@@ -78,8 +80,8 @@ export async function render(script: Script, options: RenderOptions): Promise<vo
                 inputProps: props,
                 browserExecutable,
             });
-            const output = join(outDir, `${script.id}-${format}.mp4`);
-            const raw = join(CACHE_DIR, `${script.id}-${format}.raw.mp4`);
+            const output = files.video(format);
+            const raw = join(CACHE_DIR, `${script.id}--${format}--${options.variant.name}.raw.mp4`);
             await renderMedia({
                 composition,
                 serveUrl: url,
@@ -102,8 +104,8 @@ export async function render(script: Script, options: RenderOptions): Promise<vo
             });
             await finalize(raw, output);
             // Frames of an earlier render would pass for this one's; a format's frames go with it.
-            removeFrames(script.id, format);
-            if (options.frames) await renderFrames(script, timeline.beats, format, url, props, composition);
+            removeFrames(options.variant, format);
+            if (options.frames) await renderFrames(options.variant, timeline.beats, format, url, props, composition);
         }
     } finally {
         await assets.close();
@@ -123,22 +125,22 @@ function framePrefix(format: Format): string {
     return format === 'video' ? '' : `${format}-`;
 }
 
-export function removeFrames(id: string, format?: Format): void {
-    const dir = join(OUT_DIR, id, 'frames');
+export function removeFrames(variant: Variant, format?: Format): void {
+    const dir = variantFiles(variant).frames;
     if (!existsSync(dir)) return;
     const pattern = format ? new RegExp(`^${framePrefix(format)}\\d\\d-.*\\.png$`) : /\.png$/;
     for (const file of readdirSync(dir)) if (pattern.test(file)) rmSync(join(dir, file));
 }
 
 async function renderFrames(
-    script: Script,
+    variant: Variant,
     beats: { id: string; startMs: number }[],
     format: Format,
     serveUrl: string,
     props: RenderProps,
     composition: Awaited<ReturnType<typeof selectComposition>>,
 ): Promise<void> {
-    const dir = join(OUT_DIR, script.id, 'frames');
+    const dir = variantFiles(variant).frames;
     mkdirSync(dir, { recursive: true });
     const prefix = framePrefix(format);
     for (const [i, beat] of beats.entries()) {

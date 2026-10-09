@@ -1,0 +1,9 @@
+# expect: script: use voice or voices, not both
+id: demo
+title: Demo
+since: 0.10.0
+voice: { provider: kokoro, voice: af_heart }
+voices:
+  - { provider: kokoro, voice: af_bella }
+beats:
+  - id: intro

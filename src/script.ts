@@ -42,6 +42,8 @@ export interface Script {
     formats?: Format[];
     theme?: Theme;
     voice?: VoiceSettings;
+    /** Voices to render side by side, the first being the default; instead of `voice`. */
+    voices?: VoiceSettings[];
     beats: Beat[];
 }
 
@@ -157,6 +159,7 @@ function describe(data: unknown, error: ErrorObject): string | undefined {
             if (params.missingProperty === 'model') return `${where}: this provider needs a model`;
             return `${where}: missing '${String(params.missingProperty)}'`;
         case 'not':
+            if (error.instancePath === '') return 'script: use voice or voices, not both';
             return `${where}: anchor and side are only allowed on a callout`;
         case 'enum':
             return `${where}: must be one of ${(params.allowedValues as unknown[]).join(', ')}`;
