@@ -1,0 +1,23 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3d5bd6" />
+      <stop offset="1" stop-color="#2a45b0" />
+    </linearGradient>
+  </defs>
+
+  <!-- macOS-style rounded tile with ~10% transparent margin; radius ≈ 22.37% of the tile side -->
+  <rect x="104" y="104" width="816" height="816" rx="182" ry="182" fill="url(#tile)" />
+
+  <!-- Kubermeister helm (mirrors src/renderer/components/km-logo.tsx): a ship's wheel mid-turn with
+       the king spoke drawn heavier and capped, the spoke that tells the helmsman the rudder is amidships.
+       Drawn in a 64-unit space and scaled so the mark fills 70% of the tile. -->
+  <g transform="translate(226.4 226.4) scale(8.925)" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="32" cy="32" r="20" stroke-width="4.5" />
+    <path d="M26.82 12.68 25.01 5.92M46.14 17.86 51.09 12.91M51.32 37.18 58.08 38.99M37.18 51.32 38.99 58.08M17.86 46.14 12.91 51.09M12.68 26.82 5.92 25.01" stroke-width="4.5" />
+    <path d="M37.66 26.34 46.14 17.86M39.73 34.07 51.32 37.18M34.07 39.73 37.18 51.32M26.34 37.66 17.86 46.14M24.27 29.93 12.68 26.82" stroke-width="3" opacity="0.6" />
+    <path d="M30.96 28.14 26.82 12.68" stroke-width="4.5" />
+    <circle cx="25.01" cy="5.92" r="4.2" fill="#ffffff" stroke="none" />
+    <circle cx="32" cy="32" r="4.5" fill="#ffffff" stroke="none" />
+  </g>
+</svg>

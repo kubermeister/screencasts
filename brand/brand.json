@@ -1,0 +1,61 @@
+{
+  "font": {
+    "family": "Geist",
+    "files": ["fonts/geist-latin-wght-normal.woff2", "fonts/geist-latin-ext-wght-normal.woff2"]
+  },
+  "themes": {
+    "dark": {
+      "background": "#0b0d10",
+      "surface": "#14171c",
+      "text": "#eef0f4",
+      "muted": "#b7bcc6",
+      "accent": "#5b7cff",
+      "accentStrong": "#3d5bd6",
+      "border": "#353a43",
+      "callout": "#5b7cff",
+      "calloutText": "#ffffff"
+    },
+    "light": {
+      "background": "#f7f7f4",
+      "surface": "#ffffff",
+      "text": "#18181b",
+      "muted": "#3f3f46",
+      "accent": "#3d5bd6",
+      "accentStrong": "#2a45b0",
+      "border": "#cfcfc9",
+      "callout": "#3d5bd6",
+      "calloutText": "#ffffff"
+    }
+  },
+  "sizes": {
+    "title": 76,
+    "caption": 44,
+    "callout": 34,
+    "endCard": 56,
+    "reelText": 60,
+    "reelCallout": 50
+  },
+  "video": {
+    "width": 1920,
+    "height": 1080,
+    "captionBottom": 96,
+    "captionMaxWidth": 1400,
+    "scrimOpacity": 0.4
+  },
+  "reel": {
+    "width": 1080,
+    "height": 1920,
+    "topBand": [160, 560],
+    "panel": [600, 1208],
+    "bottomBand": [1240, 1600],
+    "sideMargin": 64,
+    "maxZoomCallout": 1.8,
+    "maxZoomCursor": 1.4
+  },
+  "durations": {
+    "fadeMs": 250,
+    "endCardMs": 2500,
+    "zoomEaseMs": 400,
+    "calloutFollowMs": 150
+  }
+}
