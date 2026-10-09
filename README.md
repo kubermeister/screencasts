@@ -63,14 +63,14 @@ If nothing changed, the CLI prints `<id> is up to date`.
 
 ### Rendering
 
-Rendering uses Remotion, which downloads its own Chrome Headless Shell on the first render. If its
-download host cannot be reached from your network, point `KM_SCREENCASTS_BROWSER` at any recent
-`chrome-headless-shell`, for example Playwright's:
+Rendering uses Remotion with a Chrome Headless Shell. The CLI takes, in order:
 
-```sh
-npx playwright install chromium-headless-shell
-export KM_SCREENCASTS_BROWSER=~/Library/Caches/ms-playwright/chromium_headless_shell-<n>/chrome-headless-shell-mac-arm64/chrome-headless-shell
-```
+1. `KM_SCREENCASTS_BROWSER`, when set: the path of any recent `chrome-headless-shell`.
+2. The newest headless shell Playwright has installed (in `PLAYWRIGHT_BROWSERS_PATH`, or
+   Playwright's default cache). Install one with `npx playwright install chromium-headless-shell`.
+3. Otherwise, Remotion downloads its own on the first render. Its download host is not reachable
+   from every network; if a first render hangs on "Downloading Chrome Headless Shell", install
+   Playwright's as in 2.
 
 ### Voice
 
