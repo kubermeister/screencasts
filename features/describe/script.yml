@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: describe
+title: Describe
+since: 0.3.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice:
+  provider: kokoro
+  voice: af_heart
+beats:
+  - id: intro
+    text: { kind: title, value: 'kubectl describe, as a page' }
+    say: 'Kubermeister gives pods and nodes the reading kubectl describe does, as a page you can scroll, copy and download.'
+  - id: containers
+    text:
+      kind: callout
+      value: 'Each container: state, restarts, and why it is waiting'
+      anchor: container
+      side: auto
+    say: 'Each container has its state, its restarts, and the reason it is waiting. This one is crash looping.'
+    hold: 2.4s
+  - id: events
+    text:
+      kind: callout
+      value: 'The events, at the bottom, where kubectl puts them'
+      anchor: events
+      side: auto
+    say: 'The events are at the bottom, where kubectl puts them, with how many times each has happened.'
+    hold: 2.4s
+  - id: copy
+    text: { kind: caption, value: 'Copy and Download render the very same text' }
+    say: 'Copy and download render the very same document to text, so what you paste is what you read.'
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

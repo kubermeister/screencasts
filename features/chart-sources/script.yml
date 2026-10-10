@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: chart-sources
+title: Chart sources
+since: 0.5.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice:
+  provider: kokoro
+  voice: af_heart
+beats:
+  - id: intro
+    text: { kind: title, value: 'Charts from any repository or registry' }
+    say: 'Kubermeister reads charts from the repositories and registries you give it.'
+  - id: sources
+    text:
+      kind: callout
+      value: 'Settings › Charts lists every source, refreshed on demand'
+      anchor: repository
+      side: auto
+    say: 'Settings, Charts, lists every source, with how many charts it holds and when it was last read.'
+    hold: 2.2s
+  - id: add
+    text: { kind: caption, value: 'Add a classic repository or an OCI registry' }
+    say: 'Add a classic repository that serves an index, or an OCI registry.'
+  - id: credentials
+    text:
+      kind: callout
+      value: 'A username and password go to the keychain, not a file'
+      anchor: add-dialog
+      side: auto
+    say: 'A username and password go into the system keychain, never into the settings file.'
+    hold: 2.4s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

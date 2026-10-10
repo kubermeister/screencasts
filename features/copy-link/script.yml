@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: copy-link
+title: Copy link
+since: 0.7.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice:
+  provider: kokoro
+  voice: af_heart
+beats:
+  - id: intro
+    text: { kind: title, value: 'A link that opens the same page for anyone' }
+    say: 'Kubermeister turns any page into a link that opens the same page, on the same cluster, for anyone whose kubeconfig reaches it.'
+  - id: copy
+    text:
+      kind: callout
+      value: 'Copy link names the cluster by its API server, not your context'
+      anchor: toast
+      side: auto
+    say: 'Press copy link. The link names the cluster by its API server address, not by what your context happens to be called.'
+    hold: 2.4s
+  - id: open
+    text: { kind: caption, value: 'Opening the link from anywhere' }
+    say: 'Opening it from a chat, a ticket or a terminal'
+  - id: landed
+    text:
+      kind: callout
+      value: 'Lands on the same page and tab; never does more'
+      anchor: page
+      side: auto
+    say: 'lands on the same page and the same tab. A link only ever opens a page, and asks before switching context.'
+    hold: 2.6s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

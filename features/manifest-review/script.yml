@@ -4,17 +4,24 @@ title: Manifest review
 since: 0.5.0
 formats: [video, reel]
 theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice:
+  provider: kokoro
+  voice: af_heart
 beats:
   - id: intro
     text: { kind: title, value: 'See every edit before it is saved' }
+    say: 'Kubermeister shows you exactly what an edit will change before it is saved.'
   - id: edit
     text: { kind: caption, value: 'Edit the live manifest: replicas 3 → 5' }
+    say: 'Open the manifest, press edit, and change the replica count from three to five.'
   - id: review
     text:
       kind: callout
       value: 'Review changes shows exactly what Save would change'
       anchor: manifest-diff
       side: auto
+    say: 'Review changes shows the difference, line by line. Only what you see here is written when you save.'
     hold: 2.6s
   - id: outro
     text: { kind: end-card, value: 'kubermeister.dev' }

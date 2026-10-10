@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: helm-upgrade
+title: Helm upgrade
+since: 0.9.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice:
+  provider: kokoro
+  voice: af_heart
+beats:
+  - id: intro
+    text: { kind: title, value: 'Upgrade a release, with the diff first' }
+    say: 'Kubermeister upgrades a Helm release and shows every difference before it writes anything.'
+  - id: values
+    text: { kind: caption, value: 'Upgrade starts from the values the release runs with' }
+    say: 'Press upgrade, and the editor starts from the values the current revision was installed with.'
+  - id: edit
+    text: { kind: caption, value: 'Change a value, then Review' }
+    say: 'Change a value, here turning tracing off, then press review.'
+  - id: diff
+    text:
+      kind: callout
+      value: 'The values, diffed against the current revision'
+      anchor: upgrade-review-values
+      side: auto
+    say: 'The review diffs the values against the current revision, and every rendered object against what the cluster holds.'
+    hold: 2.2s
+  - id: removed
+    text:
+      kind: callout
+      value: 'What the new revision would delete'
+      anchor: upgrade-review-removed
+      side: auto
+    say: 'It also lists what the new revision would remove. Nothing is applied until you press upgrade.'
+    hold: 2.4s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

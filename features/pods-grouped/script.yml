@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: pods-grouped
+title: Pods grouped
+since: 0.3.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice:
+  provider: kokoro
+  voice: af_heart
+beats:
+  - id: intro
+    text: { kind: title, value: 'Group pods by node or by owner' }
+    say: 'Kubermeister groups the pods list by the node they run on, or by the controller that owns them.'
+  - id: picker
+    text: { kind: caption, value: 'Pods › Group pods › By owner' }
+    say: 'Open the pods list, and pick a grouping.'
+  - id: grouped
+    text:
+      kind: callout
+      value: 'Each heading is the owner, with a count of its pods'
+      anchor: group
+      side: auto
+    say: 'Every pod now sits under its owner, and each heading carries a count. The list stays live, and only the rows in view are rendered.'
+    hold: 2.6s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

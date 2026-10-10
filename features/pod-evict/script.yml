@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: pod-evict
+title: Pod evict
+since: 0.3.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice:
+  provider: kokoro
+  voice: af_heart
+beats:
+  - id: intro
+    text: { kind: title, value: 'Evict a pod, and let the budget have its say' }
+    say: 'Kubermeister evicts a pod through the eviction API, so a disruption budget still has its say.'
+  - id: evict
+    text:
+      kind: callout
+      value: 'Asked the way a drain asks, not deleted outright'
+      anchor: dialog
+      side: auto
+    say: 'Evict asks the pod to go the way a node drain would. Whatever runs the pod decides whether a replacement appears.'
+    hold: 2.4s
+  - id: refused
+    text:
+      kind: callout
+      value: 'The budget refused, and nothing changed'
+      anchor: toast
+      side: auto
+    say: 'This pod is protected by a disruption budget, so the cluster refuses, and nothing changes. Delete without waiting is there when you really mean it.'
+    hold: 2.8s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }
