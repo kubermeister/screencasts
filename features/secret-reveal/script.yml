@@ -1,0 +1,40 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: secret-reveal
+title: Secret reveal
+since: 0.4.6
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice:
+  provider: kokoro
+  voice: af_heart
+beats:
+  - id: intro
+    text: { kind: title, value: 'Reveal one key, for thirty seconds' }
+    say: 'Kubermeister keeps secret values hidden, and reveals one key at a time, only when asked.'
+  - id: masked
+    text:
+      kind: callout
+      value: 'The Keys tab lists the keys; every value stays masked'
+      anchor: keys
+      side: auto
+    say: 'The keys tab lists every key of the secret. The values stay masked.'
+    hold: 2s
+  - id: reveal
+    text:
+      kind: callout
+      value: 'Revealed on request, masked again after 30 seconds'
+      anchor: value
+      side: auto
+    say: 'Reveal shows one value, and masks it again after thirty seconds, or as soon as you leave the page.'
+    hold: 2.4s
+  - id: copy
+    text:
+      kind: callout
+      value: 'Copy puts a value on the clipboard without showing it'
+      anchor: toast
+      side: auto
+    say: 'Copy puts a value on the clipboard without ever showing it on screen.'
+    hold: 2.2s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

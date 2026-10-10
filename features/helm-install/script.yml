@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: helm-install
+title: Helm install
+since: 0.9.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice:
+  provider: kokoro
+  voice: af_heart
+beats:
+  - id: intro
+    text: { kind: title, value: 'Install a chart, reviewed before it is written' }
+    say: 'Kubermeister installs a Helm chart with a review of everything it would create, before anything is written.'
+  - id: charts
+    text: { kind: caption, value: 'Helm › Charts › Install' }
+    say: 'Open Helm, then Charts, and press Install on the chart you want.'
+  - id: values
+    text: { kind: caption, value: 'Name the release and edit its values' }
+    say: 'Give the release a name, and edit its values right here. Turning tracing on adds a config map.'
+  - id: review
+    text:
+      kind: callout
+      value: 'Every object it would create, dry-run against the cluster'
+      anchor: install-review-objects
+      side: auto
+    say: 'Review renders the chart and dry-runs every object against the cluster, in the order Helm installs them. Nothing is installed until you say so.'
+    hold: 2.6s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

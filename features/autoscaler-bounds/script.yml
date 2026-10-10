@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: autoscaler-bounds
+title: Autoscaler bounds
+since: 0.3.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice:
+  provider: kokoro
+  voice: af_heart
+beats:
+  - id: intro
+    text: { kind: title, value: 'Edit an autoscaler in place' }
+    say: "Kubermeister edits an autoscaler's bounds from its page, without touching the rest of it."
+  - id: open
+    text: { kind: caption, value: 'Autoscaler › Edit bounds' }
+    say: 'Press edit bounds. Each field starts with the current value.'
+  - id: fields
+    text:
+      kind: callout
+      value: 'Min, max and CPU target: only what you change is written'
+      anchor: bounds
+      side: auto
+    say: 'Raise the maximum, and only what you changed is written. The metrics the autoscaler watches stay as they are.'
+    hold: 2.4s
+  - id: saved
+    text:
+      kind: callout
+      value: 'The new bound, live on the page'
+      anchor: max
+      side: auto
+    say: 'Save, and the new bound shows on the page right away.'
+    hold: 2.2s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

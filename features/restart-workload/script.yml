@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: restart-workload
+title: Restart workload
+since: 0.3.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice:
+  provider: kokoro
+  voice: af_heart
+beats:
+  - id: intro
+    text: { kind: title, value: 'Restart a rollout the way kubectl does' }
+    say: 'Kubermeister restarts a deployment the way kubectl rollout restart does.'
+  - id: restart
+    text: { kind: caption, value: 'Deployment › Restart' }
+    say: 'Open the deployment and press restart.'
+  - id: confirm
+    text:
+      kind: callout
+      value: 'Pods are replaced gradually, following the update strategy'
+      anchor: dialog
+      side: auto
+    say: "Nothing is deleted by hand. The pods are replaced gradually, following the deployment's own update strategy."
+    hold: 2.2s
+  - id: progress
+    text:
+      kind: callout
+      value: 'Status follows the rollout until it settles'
+      anchor: progress
+      side: auto
+    say: 'The status tab follows the rollout as the new pods come up, until it settles.'
+    hold: 2.6s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

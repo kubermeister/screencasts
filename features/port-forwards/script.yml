@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: port-forwards
+title: Port forwards
+since: 0.3.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice:
+  provider: kokoro
+  voice: af_heart
+beats:
+  - id: intro
+    text: { kind: title, value: 'Port forwards that survive a rollout' }
+    say: 'Kubermeister forwards a local port to a pod or a service, and keeps it up while you work elsewhere.'
+  - id: start
+    text: { kind: caption, value: 'Service › Ports › pick a local port › Start' }
+    say: 'Open a service, pick a local port, and press start.'
+  - id: listening
+    text:
+      kind: callout
+      value: 'Forward to a Service and each connection picks a ready pod'
+      anchor: status
+      side: auto
+    say: 'Aimed at a service, every new connection goes to a pod that is ready right then, so a deploy does not kill the tunnel.'
+    hold: 2.4s
+  - id: topbar
+    text:
+      kind: callout
+      value: 'Every forward is listed and stopped from the top bar'
+      anchor: forwards
+      side: auto
+    say: 'Every forward is listed in the top bar, and stopped from there, whatever screen you are on.'
+    hold: 2.4s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }
