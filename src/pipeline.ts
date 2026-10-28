@@ -80,27 +80,26 @@ export async function runVideo(id: string, args: VideoArgs): Promise<Variant[]> 
     return run.variants;
 }
 
-async function runVariant({ script: declared, theme, formats }: Run, variant: Variant, args: VideoArgs): Promise<void> {
-    // Each variant is the script with exactly one voice, so everything downstream reads `voice`.
-    const script: Script = { ...declared, voice: variant.voice, voices: undefined };
+async function runVariant({ script, theme, formats }: Run, variant: Variant, args: VideoArgs): Promise<void> {
+    const voice = variant.voice;
     const who = `${script.id}  ${variant.name}`;
     let state: State = args.fresh ? {} : readState(variant);
     let worked = false;
 
     // Voice first: its durations decide how long each beat waits, which is part of the scene key.
-    const planned = plannedLines(script);
+    const planned = plannedLines(script, voice);
     if ((!args.only || args.only === 'voice') && planned.length > 0) {
-        const before = cachedLines(script).size;
+        const before = cachedLines(script, voice).size;
         if (args.fresh || before < planned.length) {
             await timed(who, 'voice', async () => {
-                await synthesizeLines(script, { fresh: args.fresh });
+                await synthesizeLines(script, voice, { fresh: args.fresh });
             });
             worked = true;
         }
     }
     if (args.only === 'voice') return;
 
-    const lines = cachedLines(script);
+    const lines = cachedLines(script, voice);
     if (planned.some((line) => !lines.has(line.beatId))) {
         throw new StageError(
             `${who}  record  needs its voice first: run \`npm run video -- ${script.id} --only voice\``,

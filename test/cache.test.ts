@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { loadScript, type VoiceSettings } from '../src/script';
+import { loadScript } from '../src/script';
 import { sceneKey } from '../src/state';
 import { voiceKey } from '../src/voice/cache';
+import type { VoiceSettings } from '../src/voice/provider';
 
 const base: VoiceSettings = { provider: 'kokoro', voice: 'af_heart', speed: 1 };
 
@@ -11,9 +12,9 @@ describe('voiceKey', () => {
         expect(voiceKey(base, 'Hello.')).toBe(voiceKey({ ...base }, 'Hello.'));
     });
 
-    it('treats absent and null alike, and speed 1 as the default', () => {
-        const spelled: VoiceSettings = { provider: 'kokoro', voice: 'af_heart', model: null, instructions: null };
-        expect(voiceKey(spelled, 'Hello.')).toBe(voiceKey(base, 'Hello.'));
+    it('treats speed 1 as the default', () => {
+        const unspoken: VoiceSettings = { provider: 'kokoro', voice: 'af_heart' };
+        expect(voiceKey(unspoken, 'Hello.')).toBe(voiceKey(base, 'Hello.'));
     });
 
     it.each<[string, Partial<VoiceSettings>]>([

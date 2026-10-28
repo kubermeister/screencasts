@@ -33,13 +33,16 @@
       "description": "The app theme filmed; dark by default.",
       "enum": ["dark", "light"]
     },
-    "voice": { "$ref": "#/$defs/voice" },
+    "voice": {
+      "description": "The provider that speaks the say lines; absent means no voiceover. Its voice, model and speed come from .env.",
+      "$ref": "#/$defs/provider"
+    },
     "voices": {
-      "description": "Several voices to render and compare, each into its own variant; the first is the default.",
+      "description": "Several providers to render and compare, each into its own variant; the first is the default.",
       "type": "array",
       "minItems": 1,
-      "maxItems": 8,
-      "items": { "$ref": "#/$defs/voice" }
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/provider" }
     },
     "beats": {
       "type": "array",
@@ -53,42 +56,7 @@
       "type": "string",
       "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
     },
-    "voice": {
-      "description": "Voiceover settings; absent means no voiceover.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["provider", "voice"],
-      "properties": {
-        "provider": { "enum": ["kokoro", "openai", "elevenlabs"] },
-        "voice": {
-          "description": "Provider-specific voice id, e.g. af_heart for Kokoro.",
-          "type": "string",
-          "minLength": 1
-        },
-        "model": {
-          "description": "Provider model; required for openai (gpt-4o-mini-tts) and elevenlabs.",
-          "type": ["string", "null"]
-        },
-        "instructions": {
-          "description": "openai only: delivery style.",
-          "type": ["string", "null"]
-        },
-        "speed": { "type": "number", "minimum": 0.8, "maximum": 1.2 }
-      },
-      "allOf": [
-        {
-          "if": { "properties": { "provider": { "enum": ["openai", "elevenlabs"] } } },
-          "then": {
-            "required": ["model"],
-            "properties": { "model": { "type": "string", "minLength": 1 } }
-          }
-        },
-        {
-          "if": { "properties": { "provider": { "not": { "const": "openai" } } } },
-          "then": { "properties": { "instructions": { "type": "null" } } }
-        }
-      ]
-    },
+    "provider": { "enum": ["kokoro", "openai", "elevenlabs"] },
     "beat": {
       "type": "object",
       "additionalProperties": false,

@@ -20,8 +20,9 @@ features. `PLAN.md` is the design; read it before changing anything structural.
   the code reads is listed in `.env.example`; `test/repo.test.ts` checks it.
 - Dependencies are pinned to exact versions; `remotion` and every `@remotion/*` share one version.
 - Outputs (`out/`) and caches (`.cache/`) are never committed. CI never records or renders.
-- **Paid voices are the maintainer's.** A new script, or a voice added to an existing one, uses
-  Kokoro only (`provider: kokoro`, which runs locally for free); `npm run new` scaffolds one. Never
+- **Paid voices are the maintainer's.** A script names only its provider; the voice, model and
+  speed of each provider come from `.env`. A new script, or a voice added to an existing one, uses
+  Kokoro only (`voice: kokoro`, which runs locally for free); `npm run new` scaffolds one. Never
   add or switch to `elevenlabs` or `openai`: they bill per character, and only the maintainer puts
   them in a script.
 - **Never render every video on your own.** `npm run video -- --all` lists what it would render and

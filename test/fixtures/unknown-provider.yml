@@ -1,8 +1,8 @@
-# expect: voice: this provider needs a model
+# expect: voice: must be one of kokoro, openai, elevenlabs
 id: demo
 title: Demo
 since: 0.10.0
-voice: { provider: openai, voice: alloy }
+voice: siri
 beats:
   - id: intro
     text: { kind: title, value: 'Hello' }

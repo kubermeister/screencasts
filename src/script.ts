@@ -27,23 +27,16 @@ export interface Beat {
     hold?: string;
 }
 
-export interface VoiceSettings {
-    provider: VoiceProviderId;
-    voice: string;
-    model?: string | null;
-    instructions?: string | null;
-    speed?: number;
-}
-
 export interface Script {
     id: string;
     title: string;
     since: string;
     formats?: Format[];
     theme?: Theme;
-    voice?: VoiceSettings;
-    /** Voices to render side by side, the first being the default; instead of `voice`. */
-    voices?: VoiceSettings[];
+    /** The provider that speaks the `say` lines; how it sounds comes from `.env`. Absent is silent. */
+    voice?: VoiceProviderId;
+    /** Providers to render side by side, the first being the default; instead of `voice`. */
+    voices?: VoiceProviderId[];
     beats: Beat[];
 }
 
@@ -156,7 +149,6 @@ function describe(data: unknown, error: ErrorObject): string | undefined {
             return `${where}: unknown key '${String(params.additionalProperty)}'`;
         case 'required':
             if (params.missingProperty === 'anchor') return `${where}: a callout needs an anchor`;
-            if (params.missingProperty === 'model') return `${where}: this provider needs a model`;
             return `${where}: missing '${String(params.missingProperty)}'`;
         case 'not':
             if (error.instancePath === '') return 'script: use voice or voices, not both';
@@ -172,8 +164,9 @@ function describe(data: unknown, error: ErrorObject): string | undefined {
             const length = typeof value === 'string' ? value.length : 0;
             return `${where}: ${length} characters, at most ${String(params.limit)} allowed`;
         }
+        case 'uniqueItems':
+            return `${where}: lists the same provider twice`;
         case 'type':
-            if (error.instancePath.endsWith('/instructions')) return `${where}: instructions are for openai only`;
             return `${where}: must be ${String(params.type)}`;
         default:
             return `${where}: ${error.message ?? error.keyword}`;

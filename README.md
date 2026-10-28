@@ -139,29 +139,31 @@ Rendering uses Remotion with a Chrome Headless Shell. The CLI takes, in order:
 
 ### Voice
 
-Voiceover is optional per video: a script without a `voice:` block is silent. With one, every beat's
-`say` line is spoken, and the beat waits for it to finish. The end card is never spoken.
+Voiceover is optional per video: a script without `voice:` is silent. With one, every beat's `say`
+line is spoken, and the beat waits for it to finish. The end card is never spoken.
 
-**Kokoro**, local and free, is the default. Its model is downloaded on the first use:
+A script names only the provider. How each provider sounds (its voice, model, speed, tone) is set
+once in `.env`, for every video, so changing the voice of the whole series is one line there, and a
+paid voice id never enters the repository:
 
 ```yaml
-voice:
-  provider: kokoro
-  voice: af_heart # af_ = American female, am_ = male, bf_ / bm_ = British
-  speed: 1.0 # optional, 0.8–1.2
+voice: kokoro # kokoro | openai | elevenlabs
 ```
 
-Its best-rated voices are `af_heart` and `af_bella`, then `af_nicole` and `bf_emma`. The male
-voices rate lower; for a natural male voice, use ElevenLabs or OpenAI.
+**Kokoro**, local and free, is the default and needs nothing in `.env`. Its model is downloaded on
+the first use. `KOKORO_VOICE` picks the voice (`af_heart` by default; `af_` = American female,
+`am_` = male, `bf_` / `bm_` = British) and `KOKORO_SPEED` the speed (0.8–1.2). Its best-rated voices
+are `af_heart` and `af_bella`, then `af_nicole` and `bf_emma`. The male voices rate lower; for a
+natural male voice, use ElevenLabs or OpenAI.
 
-**ElevenLabs** needs `ELEVENLABS_API_KEY` in `.env`, and a paid plan for videos you publish (the
-free plan has no commercial licence):
+**ElevenLabs** needs `ELEVENLABS_API_KEY` and `ELEVENLABS_VOICE` in `.env`, and a paid plan for
+videos you publish (the free plan has no commercial licence):
 
-```yaml
-voice:
-  provider: elevenlabs
-  voice: Dhyh3AlgVPGDnVMGBox6 # the Voice ID, from the voice's page in ElevenLabs
-  model: eleven_v4 # or eleven_v3, eleven_multilingual_v2
+```sh
+ELEVENLABS_API_KEY=…
+ELEVENLABS_VOICE=Dhyh3AlgVPGDnVMGBox6   # the Voice ID, from the voice's page in ElevenLabs
+ELEVENLABS_MODEL=eleven_v4              # or eleven_v3; default eleven_multilingual_v2
+ELEVENLABS_SPEED=1.0                    # optional, 0.8–1.2
 ```
 
 - Any voice works: one from the Voice Library, or one you made with Voice Design or a voice clone.
@@ -170,38 +172,31 @@ voice:
   older one. Both cost about one credit per character of `say` text.
 - An API key limited to Text to Speech is enough.
 
-**OpenAI** needs `OPENAI_API_KEY` in `.env`:
+**OpenAI** needs `OPENAI_API_KEY` and `OPENAI_VOICE` in `.env`:
 
-```yaml
-voice:
-  provider: openai
-  voice: alloy # or ash, coral, sage, verse, …
-  model: gpt-4o-mini-tts
-  instructions: 'calm, confident developer demo' # optional, the tone; openai only
+```sh
+OPENAI_API_KEY=…
+OPENAI_VOICE=alloy                                  # or ash, coral, sage, verse, …
+OPENAI_MODEL=gpt-4o-mini-tts                        # the default
+OPENAI_INSTRUCTIONS=calm, confident developer demo  # optional, the tone
+OPENAI_SPEED=1.0                                    # optional, 0.8–1.2
 ```
 
-**Several voices to compare:** list them under `voices:` instead of `voice:`. The first is the
+**Several providers to compare:** list them under `voices:` instead of `voice:`. The first is the
 default; the others are rendered only when asked:
 
 ```yaml
-voices:
-  - provider: elevenlabs # the default
-    voice: Dhyh3AlgVPGDnVMGBox6
-    model: eleven_v4
-  - provider: elevenlabs
-    voice: Dhyh3AlgVPGDnVMGBox6
-    model: eleven_multilingual_v2
-  - provider: kokoro
-    voice: af_heart
+voices: [elevenlabs, kokoro]
 ```
 
-`npm run video -- <id> --voice all` renders every voice, each into its own variant;
+`npm run video -- <id> --voice all` renders every provider, each into its own variant;
 `--voice kokoro-af-heart` renders one. Each voice is its own recording, because line lengths set the
 beats' timing, so every extra voice costs about two minutes on its first run.
 
-**Changing a voice** or a `say` line re-synthesizes only the lines it affects, then re-records and
-re-renders that variant. Every line stays cached in `out/voice/` by its text and voice settings,
-and every variant keeps its own outputs, so switching back to a voice used before costs nothing.
+**Changing a voice** in `.env` or a `say` line re-synthesizes only the lines it affects, then
+re-records and re-renders that variant. Every line stays cached in `out/voice/` by its text and
+voice settings, and every variant keeps its own outputs, so switching back to a voice used before
+costs nothing.
 
 ### Configuration
 
