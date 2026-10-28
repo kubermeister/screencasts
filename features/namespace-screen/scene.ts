@@ -17,11 +17,11 @@ export default defineScene({
         anchor('limits', limits);
         await beat('intro');
         await beat('contents');
-        await click(window.getByRole('tab', { name: 'Budgets' }));
-        await quotas.waitFor({ timeout: 60_000 });
-        await beat('quotas');
-        await glide(limits);
-        await beat('limits');
+        await beat('quotas', async () => {
+            await click(window.getByRole('tab', { name: 'Budgets' }));
+            await quotas.waitFor({ timeout: 60_000 });
+        });
+        await beat('limits', () => glide(limits));
         await beat('outro');
     },
     async cleanup() {},

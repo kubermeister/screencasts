@@ -18,16 +18,16 @@ export default defineScene({
         anchor('upgrade-review-removed', removed);
         await beat('intro');
         await beat('values');
-        await beat('edit');
-        await click(page.locator('.cm-line', { hasText: /^\s+enabled: true$/ }).first());
-        await press('End');
-        for (let i = 0; i < 'true'.length; i++) await press('Backspace');
-        await type('false');
-        await click(page.getByRole('button', { name: 'Review' }));
-        await window.getByTestId('upgrade-review-values').waitFor({ timeout: 60_000 });
+        await beat('edit', async () => {
+            await click(page.locator('.cm-line', { hasText: /^\s+enabled: true$/ }).first());
+            await press('End');
+            for (let i = 0; i < 'true'.length; i++) await press('Backspace');
+            await type('false');
+            await click(page.getByRole('button', { name: 'Review' }));
+            await window.getByTestId('upgrade-review-values').waitFor({ timeout: 60_000 });
+        });
         await beat('diff');
-        await glide(removed);
-        await beat('removed');
+        await beat('removed', () => glide(removed));
         await beat('outro');
     },
     async cleanup() {},

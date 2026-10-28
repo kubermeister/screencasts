@@ -38,22 +38,26 @@ export default defineScene({
         const job = window.getByTestId('jobs-table').locator(`[data-job^="${CRONJOB}-"]`).first();
         anchor('job', job);
         await beat('intro');
-        await beat('run-now');
-        await click(page.getByRole('button', { name: 'Run now' }));
-        await window
-            .getByText(/created/)
-            .first()
-            .waitFor({ timeout: 30_000 });
-        await goto('/workloads/jobs');
-        await job.waitFor({ timeout: 60_000 });
-        await focus(window.getByTestId('jobs-table'));
-        await beat('job');
-        await goto(`/workloads/cronjobs/${NAMESPACE}/${CRONJOB}`);
-        await page.getByRole('button', { name: 'Suspend' }).waitFor({ timeout: 60_000 });
-        await focus(page);
-        await beat('suspend');
-        await click(page.getByRole('button', { name: 'Suspend' }));
-        await page.getByRole('button', { name: 'Resume' }).waitFor({ timeout: 30_000 });
+        await beat('run-now', async () => {
+            await click(page.getByRole('button', { name: 'Run now' }));
+            await window
+                .getByText(/created/)
+                .first()
+                .waitFor({ timeout: 30_000 });
+        });
+        // The callout follows the job's row, so the jobs list is opened under this beat.
+        await beat('job', async () => {
+            await goto('/workloads/jobs');
+            await job.waitFor({ timeout: 60_000 });
+            await focus(window.getByTestId('jobs-table'));
+        });
+        await beat('suspend', async () => {
+            await goto(`/workloads/cronjobs/${NAMESPACE}/${CRONJOB}`);
+            await page.getByRole('button', { name: 'Suspend' }).waitFor({ timeout: 60_000 });
+            await focus(page);
+            await click(page.getByRole('button', { name: 'Suspend' }));
+            await page.getByRole('button', { name: 'Resume' }).waitFor({ timeout: 30_000 });
+        });
         await beat('outro');
     },
     async cleanup({ kubectl }) {

@@ -29,19 +29,23 @@ export default defineScene({
         anchor('toast', window.locator('[data-sonner-toast]').filter({ hasText: 'Link copied' }));
         anchor('page', page);
         await beat('intro');
-        await click(page.getByRole('button', { name: 'Copy link' }));
-        await window.locator('[data-sonner-toast]').filter({ hasText: 'Link copied' }).waitFor({ timeout: 30_000 });
-        const link = await window.evaluate(() => globalThis.__kmCopied);
-        if (!link) throw new Error('Copy link put nothing on the clipboard');
-        await beat('copy');
-        await goto('/overview/summary');
-        await window.getByTestId('cluster-summary').waitFor({ timeout: 60_000 });
-        await beat('open');
-        // What the OS does when a kubermeister:// link is opened; main handles it the same on every platform.
-        await app.evaluate(({ app: electron }, url) => {
-            electron.emit('open-url', { preventDefault() {} }, url);
-        }, link);
-        await page.getByRole('tab', { name: /History/, selected: true }).waitFor({ timeout: 60_000 });
+        let link: string | undefined;
+        await beat('copy', async () => {
+            await click(page.getByRole('button', { name: 'Copy link' }));
+            await window.locator('[data-sonner-toast]').filter({ hasText: 'Link copied' }).waitFor({ timeout: 30_000 });
+            link = await window.evaluate(() => globalThis.__kmCopied);
+            if (!link) throw new Error('Copy link put nothing on the clipboard');
+        });
+        // Leaving the page first, so the link visibly brings it back.
+        await beat('open', async () => {
+            await goto('/overview/summary');
+            await window.getByTestId('cluster-summary').waitFor({ timeout: 60_000 });
+            // What the OS does when a kubermeister:// link is opened; main handles it the same on every platform.
+            await app.evaluate(({ app: electron }, url) => {
+                electron.emit('open-url', { preventDefault() {} }, url);
+            }, link);
+            await page.getByRole('tab', { name: /History/, selected: true }).waitFor({ timeout: 60_000 });
+        });
         await beat('landed');
         await beat('outro');
     },

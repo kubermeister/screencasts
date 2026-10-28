@@ -16,16 +16,20 @@ export default defineScene({
         anchor('status', page.getByText('Cordoned', { exact: true }).first());
         anchor('switch', window.getByRole('switch', { name: /emptyDir/ }));
         await beat('intro');
-        await click(page.getByRole('button', { name: 'Cordon', exact: true }));
-        await page.getByText('Cordoned', { exact: true }).first().waitFor({ timeout: 30_000 });
-        await beat('cordon');
-        await click(page.getByRole('button', { name: 'Drain', exact: true }));
-        await window.getByTestId('drain-plan').waitFor({ timeout: 60_000 });
-        await beat('drain');
-        await press('Escape');
-        await beat('uncordon');
-        await click(page.getByRole('button', { name: 'Uncordon', exact: true }));
-        await page.getByRole('button', { name: 'Cordon', exact: true }).waitFor({ timeout: 30_000 });
+        await beat('cordon', async () => {
+            await click(page.getByRole('button', { name: 'Cordon', exact: true }));
+            await page.getByText('Cordoned', { exact: true }).first().waitFor({ timeout: 30_000 });
+        });
+        await beat('drain', async () => {
+            await click(page.getByRole('button', { name: 'Drain', exact: true }));
+            await window.getByTestId('drain-plan').waitFor({ timeout: 60_000 });
+        });
+        await beat('uncordon', async () => {
+            // The plan is dismissed, never run: the node is only uncordoned.
+            await press('Escape');
+            await click(page.getByRole('button', { name: 'Uncordon', exact: true }));
+            await page.getByRole('button', { name: 'Cordon', exact: true }).waitFor({ timeout: 30_000 });
+        });
         await beat('outro');
     },
     async cleanup({ kubectl }) {

@@ -19,18 +19,20 @@ export default defineScene({
         const page = window.getByTestId('deployment-page');
         anchor('revision-diff', page.getByTestId('revision-diff'));
         await beat('intro');
-        await beat('history');
-        await click(window.getByRole('tab', { name: /History/ }));
-        await page.getByTestId('rollout-history').locator('[data-revision="2"]').waitFor({ timeout: 60_000 });
-        await focus(page.getByTestId('rollout-history'));
+        await beat('history', async () => {
+            await click(window.getByRole('tab', { name: /History/ }));
+            await page.getByTestId('rollout-history').locator('[data-revision="2"]').waitFor({ timeout: 60_000 });
+            await focus(page.getByTestId('rollout-history'));
+        });
         // Both pickers are chosen rather than left at their defaults, which can both sit on #1 when
         // the tab opens before the second revision has loaded, and an empty diff shows nothing.
-        await beat('pick');
-        await click(page.getByRole('combobox', { name: 'From revision' }));
-        await click(window.getByRole('option', { name: '#1' }));
-        await click(page.getByRole('combobox', { name: 'To revision' }));
-        await click(window.getByRole('option', { name: '#2' }));
-        await page.getByTestId('revision-diff').getByText('restartedAt').first().waitFor({ timeout: 30_000 });
+        await beat('pick', async () => {
+            await click(page.getByRole('combobox', { name: 'From revision' }));
+            await click(window.getByRole('option', { name: '#1' }));
+            await click(page.getByRole('combobox', { name: 'To revision' }));
+            await click(window.getByRole('option', { name: '#2' }));
+            await page.getByTestId('revision-diff').getByText('restartedAt').first().waitFor({ timeout: 30_000 });
+        });
         await beat('diff');
         await beat('outro');
     },

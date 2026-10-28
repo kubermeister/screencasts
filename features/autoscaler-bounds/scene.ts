@@ -20,20 +20,23 @@ export default defineScene({
         // The Overview card's Max row: its label span, then the row around it.
         anchor('max', page.getByText('Max', { exact: true }).locator('..'));
         await beat('intro');
-        await beat('open');
-        await click(page.getByRole('button', { name: 'Edit bounds' }));
-        await bounds.waitFor({ timeout: 30_000 });
-        await click(bounds.getByLabel('Maximum replicas'));
-        await press('ControlOrMeta+a');
-        await type('10');
-        await beat('fields');
-        await click(bounds.getByRole('button', { name: 'Save' }));
-        await page
-            .getByText('Max', { exact: true })
-            .locator('..')
-            .getByText('10', { exact: true })
-            .waitFor({ timeout: 30_000 });
-        await beat('saved');
+        await beat('open', async () => {
+            await click(page.getByRole('button', { name: 'Edit bounds' }));
+            await bounds.waitFor({ timeout: 30_000 });
+        });
+        await beat('fields', async () => {
+            await click(bounds.getByLabel('Maximum replicas'));
+            await press('ControlOrMeta+a');
+            await type('10');
+        });
+        await beat('saved', async () => {
+            await click(bounds.getByRole('button', { name: 'Save' }));
+            await page
+                .getByText('Max', { exact: true })
+                .locator('..')
+                .getByText('10', { exact: true })
+                .waitFor({ timeout: 30_000 });
+        });
         await beat('outro');
     },
     async cleanup({ kubectl }) {

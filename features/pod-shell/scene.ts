@@ -30,15 +30,17 @@ export default defineScene({
         const terminal = window.getByTestId('terminal-host');
         anchor('terminal', terminal);
         await beat('intro');
-        await beat('open');
-        await click(window.getByRole('tab', { name: 'Shell' }));
-        await terminal.locator('.xterm-rows', { hasText: '/ #' }).waitFor({ timeout: 60_000 });
-        await click(terminal);
-        await type('hostname\n');
-        await beat('commands');
-        await type('ls /etc/checkout\n');
-        await type('cat /etc/checkout/currency.yaml\n');
-        await terminal.getByText('EUR').first().waitFor({ timeout: 30_000 });
+        await beat('open', async () => {
+            await click(window.getByRole('tab', { name: 'Shell' }));
+            await terminal.locator('.xterm-rows', { hasText: '/ #' }).waitFor({ timeout: 60_000 });
+            await click(terminal);
+            await type('hostname\n');
+        });
+        await beat('commands', async () => {
+            await type('ls /etc/checkout\n');
+            await type('cat /etc/checkout/currency.yaml\n');
+            await terminal.getByText('EUR').first().waitFor({ timeout: 30_000 });
+        });
         await beat('closes');
         await beat('outro');
     },

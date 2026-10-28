@@ -28,59 +28,78 @@ export default defineScene({
         anchor('manifest-diff', window.getByTestId('manifest-diff'));
 
         await beat('intro');
-        await beat('summary');
-        await glide(window.getByTestId('cluster-summary').getByTestId('alerts'));
 
-        await beat('palette');
-        await press('Meta+k');
+        await beat('summary', async () => {
+            await glide(window.getByTestId('cluster-summary').getByTestId('alerts'));
+        });
+
         const palette = window.getByRole('dialog', { name: 'Quick actions' });
-        await palette.waitFor();
-        await type('deploy');
-        await click(palette.getByRole('option', { name: 'Deployments', exact: true }));
-        await window.getByTestId('deployments-table').waitFor({ timeout: 30_000 });
-        await beat('deployments');
+        await beat('palette', async () => {
+            await press('Meta+k');
+            await palette.waitFor();
+            await type('deploy');
+            await palette.getByRole('option', { name: 'Deployments', exact: true }).waitFor();
+        });
 
-        await goto(`/workloads/deployments/${NAMESPACE}/checkout`);
-        await deploymentPage.waitFor({ timeout: 30_000 });
-        await click(window.getByRole('tab', { name: 'Logs' }));
-        await window
-            .getByTestId('log-viewer')
-            .getByRole('list', { name: 'Log lines' })
-            .getByText('checkout')
-            .first()
-            .waitFor({ timeout: 90_000 });
-        await beat('logs');
+        await beat('deployments', async () => {
+            await click(palette.getByRole('option', { name: 'Deployments', exact: true }));
+            await window.getByTestId('deployments-table').waitFor({ timeout: 30_000 });
+        });
 
-        await click(window.getByRole('tab', { name: /History/ }));
-        await deploymentPage.getByTestId('rollout-history').locator('[data-revision="2"]').waitFor({ timeout: 60_000 });
-        await click(deploymentPage.getByRole('combobox', { name: 'From revision' }));
-        await click(window.getByRole('option', { name: '#1' }));
-        await click(deploymentPage.getByRole('combobox', { name: 'To revision' }));
-        await click(window.getByRole('option', { name: '#2' }));
-        await deploymentPage.getByTestId('revision-diff').getByText('restartedAt').first().waitFor({ timeout: 30_000 });
-        await beat('compare');
+        await beat('logs', async () => {
+            await goto(`/workloads/deployments/${NAMESPACE}/checkout`);
+            await deploymentPage.waitFor({ timeout: 30_000 });
+            await click(window.getByRole('tab', { name: 'Logs' }));
+            await window
+                .getByTestId('log-viewer')
+                .getByRole('list', { name: 'Log lines' })
+                .getByText('checkout')
+                .first()
+                .waitFor({ timeout: 90_000 });
+        });
 
-        await goto(`/overview/nodes/${NODE}`);
-        const drain = window.getByRole('button', { name: 'Drain', exact: true });
-        await drain.waitFor({ timeout: 90_000 });
-        await click(drain);
-        await window.getByTestId('drain-plan').waitFor({ timeout: 60_000 });
-        await beat('drain');
-        await press('Escape');
+        await beat('compare', async () => {
+            await click(window.getByRole('tab', { name: /History/ }));
+            await deploymentPage
+                .getByTestId('rollout-history')
+                .locator('[data-revision="2"]')
+                .waitFor({ timeout: 60_000 });
+            await click(deploymentPage.getByRole('combobox', { name: 'From revision' }));
+            await click(window.getByRole('option', { name: '#1' }));
+            await click(deploymentPage.getByRole('combobox', { name: 'To revision' }));
+            await click(window.getByRole('option', { name: '#2' }));
+            await deploymentPage
+                .getByTestId('revision-diff')
+                .getByText('restartedAt')
+                .first()
+                .waitFor({ timeout: 30_000 });
+        });
 
-        await goto(`/workloads/deployments/${NAMESPACE}/checkout`);
-        await deploymentPage.waitFor({ timeout: 30_000 });
-        await click(window.getByRole('tab', { name: /Manifest/ }));
-        await manifest.waitFor({ timeout: 30_000 });
-        await click(manifest.getByRole('button', { name: 'Edit', exact: true }));
-        await manifest.locator('.cm-content[contenteditable="true"]').waitFor({ timeout: 30_000 });
-        await click(manifest.locator('.cm-line', { hasText: /^\s{2}replicas: \d+$/ }).first());
-        await press('End');
-        await press('Backspace');
-        await type('5');
-        await click(manifest.getByRole('button', { name: 'Review changes' }));
-        await window.getByTestId('manifest-diff').getByText('replicas: 5').first().waitFor({ timeout: 30_000 });
-        await beat('review');
+        await beat('drain', async () => {
+            await goto(`/overview/nodes/${NODE}`);
+            const drain = window.getByRole('button', { name: 'Drain', exact: true });
+            await drain.waitFor({ timeout: 90_000 });
+            await click(drain);
+            await window.getByTestId('drain-plan').waitFor({ timeout: 60_000 });
+        });
+
+        // The plan is only shown: the dialog is dismissed and the node is never drained.
+        await beat('review', async () => {
+            await press('Escape');
+            await goto(`/workloads/deployments/${NAMESPACE}/checkout`);
+            await deploymentPage.waitFor({ timeout: 30_000 });
+            await click(window.getByRole('tab', { name: /Manifest/ }));
+            await manifest.waitFor({ timeout: 30_000 });
+            await click(manifest.getByRole('button', { name: 'Edit', exact: true }));
+            await manifest.locator('.cm-content[contenteditable="true"]').waitFor({ timeout: 30_000 });
+            await click(manifest.locator('.cm-line', { hasText: /^\s{2}replicas: \d+$/ }).first());
+            await press('End');
+            await press('Backspace');
+            await type('5');
+            await click(manifest.getByRole('button', { name: 'Review changes' }));
+            await window.getByTestId('manifest-diff').getByText('replicas: 5').first().waitFor({ timeout: 30_000 });
+        });
+
         await beat('outro');
     },
     // The edit is never saved: backed all the way out so closing does not stop on the discard guard.

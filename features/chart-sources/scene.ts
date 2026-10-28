@@ -13,17 +13,19 @@ export default defineScene({
         anchor('add-dialog', dialog);
         await beat('intro');
         await beat('sources');
-        await beat('add');
-        await click(window.getByTestId('add-chart-repository'));
-        await dialog.waitFor({ timeout: 30_000 });
-        await click(dialog.getByRole('radio', { name: /OCI registry/ }));
-        await click(dialog.getByRole('textbox', { name: 'Repository name' }));
-        await type('podinfo');
-        await click(dialog.getByRole('textbox', { name: 'Repository URL' }));
-        await type('oci://ghcr.io/stefanprodan/charts');
-        await click(dialog.getByRole('textbox', { name: 'Username' }));
-        await type('deploy-bot');
-        await beat('credentials');
+        await beat('add', async () => {
+            await click(window.getByTestId('add-chart-repository'));
+            await dialog.waitFor({ timeout: 30_000 });
+            await click(dialog.getByRole('radio', { name: /OCI registry/ }));
+            await click(dialog.getByRole('textbox', { name: 'Repository name' }));
+            await type('podinfo');
+            await click(dialog.getByRole('textbox', { name: 'Repository URL' }));
+            await type('oci://ghcr.io/stefanprodan/charts');
+        });
+        await beat('credentials', async () => {
+            await click(dialog.getByRole('textbox', { name: 'Username' }));
+            await type('deploy-bot');
+        });
         await beat('outro');
     },
     // Add would read the registry over the network; the dialog is dismissed instead.

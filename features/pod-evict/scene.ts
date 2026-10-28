@@ -30,12 +30,15 @@ export default defineScene({
         anchor('dialog', dialog);
         anchor('toast', toast);
         await beat('intro');
-        await click(page.getByRole('button', { name: 'Evict' }));
-        await dialog.waitFor({ timeout: 30_000 });
-        await beat('evict');
-        await click(dialog.getByRole('button', { name: 'Evict' }));
-        await toast.waitFor({ timeout: 30_000 });
-        await beat('refused');
+        await beat('evict', async () => {
+            await click(page.getByRole('button', { name: 'Evict' }));
+            await dialog.waitFor({ timeout: 30_000 });
+        });
+        // Confirming is what the budget answers, so the refusal lands under its own text.
+        await beat('refused', async () => {
+            await click(dialog.getByRole('button', { name: 'Evict' }));
+            await toast.waitFor({ timeout: 30_000 });
+        });
         await beat('outro');
     },
     async cleanup() {},

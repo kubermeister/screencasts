@@ -13,10 +13,11 @@ export default defineScene({
     async run({ window, beat, anchor, click }) {
         anchor('drain-plan', window.getByTestId('drain-plan'));
         await beat('intro');
-        await beat('drain');
-        await click(window.getByRole('button', { name: 'Drain', exact: true }));
-        // The plan only: nothing here presses the dialog's Drain.
-        await window.getByTestId('drain-plan').waitFor({ timeout: 60_000 });
+        await beat('drain', async () => {
+            await click(window.getByRole('button', { name: 'Drain', exact: true }));
+            // The plan only: nothing here presses the dialog's Drain.
+            await window.getByTestId('drain-plan').waitFor({ timeout: 60_000 });
+        });
         await beat('plan');
         await beat('outro');
     },

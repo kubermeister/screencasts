@@ -21,11 +21,11 @@ export default defineScene({
         anchor('filter', filter);
         await beat('intro');
         await beat('interleaved');
-        await beat('highlight');
-        await click(viewer.getByRole('button', { name: 'Highlight matches' }));
-        await click(filter);
-        await type('ERROR');
-        await beat('errors');
+        await beat('highlight', () => click(viewer.getByRole('button', { name: 'Highlight matches' })));
+        await beat('errors', async () => {
+            await click(filter);
+            await type('ERROR');
+        });
         await beat('outro');
     },
     async cleanup() {},

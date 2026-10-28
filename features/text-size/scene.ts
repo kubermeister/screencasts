@@ -9,13 +9,10 @@ export default defineScene({
         const picker = window.getByRole('combobox', { name: 'Text size', exact: true });
         anchor('text-size-picker', picker);
         await beat('intro');
-        await beat('open-picker');
-        await click(picker);
-        await click(window.getByRole('option', { name: 'Larger', exact: true }));
-        await beat('larger');
-        await click(picker);
-        await click(window.getByRole('option', { name: 'Default', exact: true }));
+        await beat('open-picker', () => click(picker));
+        await beat('larger', () => click(window.getByRole('option', { name: 'Larger', exact: true })));
         await beat('outro');
     },
+    // The app starts from a fresh user-data directory every launch, so the larger size is not kept.
     async cleanup() {},
 });

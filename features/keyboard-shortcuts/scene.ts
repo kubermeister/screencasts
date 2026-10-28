@@ -9,22 +9,25 @@ export default defineScene({
     async run({ window, beat, anchor, press, hold }) {
         anchor('sheet', window.getByTestId('shortcuts-dialog'));
         await beat('intro');
-        await beat('domains');
-        await press('Meta+2');
-        await window.getByTestId('pods-table').waitFor({ timeout: 60_000 });
-        await hold(800);
-        await press('Meta+3');
-        await hold(800);
-        await press('Meta+2');
-        await window.getByTestId('pods-table').waitFor({ timeout: 60_000 });
-        await beat('search');
-        await press('/');
-        await hold(600);
-        // Single keys act outside text fields, so the search box is left before the sheet is asked for.
-        await press('Escape');
-        await beat('sheet');
-        await press('?');
-        await window.getByTestId('shortcuts-dialog').waitFor({ timeout: 30_000 });
+        await beat('domains', async () => {
+            await press('Meta+2');
+            await window.getByTestId('pods-table').waitFor({ timeout: 60_000 });
+            await hold(800);
+            await press('Meta+3');
+            await hold(800);
+            await press('Meta+2');
+            await window.getByTestId('pods-table').waitFor({ timeout: 60_000 });
+        });
+        await beat('search', async () => {
+            await press('/');
+            await hold(600);
+        });
+        await beat('sheet', async () => {
+            // Single keys act outside text fields, so the search box is left before the sheet is asked for.
+            await press('Escape');
+            await press('?');
+            await window.getByTestId('shortcuts-dialog').waitFor({ timeout: 30_000 });
+        });
         await beat('outro');
     },
     async cleanup({ window }) {

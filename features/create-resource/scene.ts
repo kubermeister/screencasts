@@ -21,16 +21,19 @@ export default defineScene({
         anchor('toast', window.locator('[data-sonner-toast]').filter({ hasText: 'Dry run' }));
         anchor('drop-target', window.getByTestId('manifest-drop-target'));
         await beat('intro');
-        await click(window.getByRole('combobox', { name: 'Insert template' }));
-        await click(window.getByRole('option', { name: /^Deployment / }));
-        await page.locator('.cm-line', { hasText: 'kind: Deployment' }).waitFor({ timeout: 30_000 });
-        await beat('template');
-        await click(page.getByRole('button', { name: 'Dry run' }));
-        await window.locator('[data-sonner-toast]').filter({ hasText: 'Dry run' }).waitFor({ timeout: 30_000 });
-        await beat('dry-run');
-        await dragFile(window, 'dragenter');
-        await window.getByTestId('manifest-drop-target').waitFor({ timeout: 10_000 });
-        await beat('drop');
+        await beat('template', async () => {
+            await click(window.getByRole('combobox', { name: 'Insert template' }));
+            await click(window.getByRole('option', { name: /^Deployment / }));
+            await page.locator('.cm-line', { hasText: 'kind: Deployment' }).waitFor({ timeout: 30_000 });
+        });
+        await beat('dry-run', async () => {
+            await click(page.getByRole('button', { name: 'Dry run' }));
+            await window.locator('[data-sonner-toast]').filter({ hasText: 'Dry run' }).waitFor({ timeout: 30_000 });
+        });
+        await beat('drop', async () => {
+            await dragFile(window, 'dragenter');
+            await window.getByTestId('manifest-drop-target').waitFor({ timeout: 10_000 });
+        });
         await beat('outro');
     },
     async cleanup({ window }) {

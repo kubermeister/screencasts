@@ -42,10 +42,11 @@ export default defineScene({
         anchor('worst-object', window.getByTestId('release-resources').locator('[data-worst="true"]'));
         await beat('intro');
         await beat('healthy');
-        await beat('missing');
-        kubectl(['-n', NAMESPACE, 'delete', 'configmap', CONFIG_MAP, '--ignore-not-found']);
-        // The tab re-reads every 5 s; the roll-up turns Failing once the object is seen missing.
-        await window.locator('[data-testid="release-health"][data-health="Failing"]').waitFor({ timeout: 60_000 });
+        await beat('missing', async () => {
+            kubectl(['-n', NAMESPACE, 'delete', 'configmap', CONFIG_MAP, '--ignore-not-found']);
+            // The tab re-reads every 5 s; the roll-up turns Failing once the object is seen missing.
+            await window.locator('[data-testid="release-health"][data-health="Failing"]').waitFor({ timeout: 60_000 });
+        });
         await beat('failing');
         await beat('outro');
     },
