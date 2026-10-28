@@ -8,6 +8,7 @@ import { useBrandFont } from './fonts';
 import { estimateLabel, layoutCallout } from './layout';
 import {
     boxAt,
+    calloutShownFrom,
     cameraAt,
     fadeOpacity,
     frameToMs,
@@ -67,7 +68,8 @@ export function Video(props: RenderProps) {
             </AbsoluteFill>
         );
     } else if (span?.kind === 'callout' && span.anchor) {
-        const css = boxAt(timeline.anchors[span.anchor], ms, brand.durations.calloutFollowMs);
+        const samples = timeline.anchors[span.anchor];
+        const css = boxAt(samples, ms, brand.durations.calloutFollowMs);
         if (css) {
             const anchor = { x: (css.x - originX) * k, y: (css.y - originY) * k, w: css.w * k, h: css.h * k };
             const label = estimateLabel(span.value, brand.sizes.callout, CALLOUT_MAX_WIDTH, CALLOUT_PADDING);
@@ -79,7 +81,7 @@ export function Video(props: RenderProps) {
                     brand={brand}
                     palette={palette}
                     fontSize={brand.sizes.callout}
-                    opacity={fadeOpacity(ms, span.startMs, span.endMs, fade)}
+                    opacity={fadeOpacity(ms, calloutShownFrom(samples, span), span.endMs, fade)}
                 />
             );
         }

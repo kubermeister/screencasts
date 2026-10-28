@@ -6,6 +6,7 @@ import {
     boxAt,
     cropAt,
     cropHeight,
+    calloutShownFrom,
     fadeOpacity,
     frameToMs,
     msToFrame,
@@ -33,7 +34,9 @@ export function Reel(props: RenderProps) {
     const span = spanAt(spans, ms);
     const palette = brand.themes[theme];
     const reel = brand.reel;
-    const opacity = span ? fadeOpacity(ms, span.startMs, span.endMs, brand.durations.fadeMs) : 0;
+    const shownFrom =
+        span?.kind === 'callout' && span.anchor ? calloutShownFrom(timeline.anchors[span.anchor], span) : span?.startMs;
+    const opacity = span ? fadeOpacity(ms, shownFrom ?? span.startMs, span.endMs, brand.durations.fadeMs) : 0;
 
     const windowW = timeline.footage.width / timeline.scale;
     const windowH = timeline.footage.height / timeline.scale;

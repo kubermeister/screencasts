@@ -95,15 +95,17 @@ export function compositionMs(timeline: Timeline, script: Pick<Script, 'beats'>,
 }
 
 /**
- * When each beat's text is on screen: from its beat's start until the next beat with text starts.
+ * When each beat's text is on screen: from its beat's start until the next beat starts. A beat
+ * without text clears the screen, so a scene can end a callout the moment its element goes away.
  * An end card stays until the end.
  */
 export function textSpans(timeline: Timeline, script: Pick<Script, 'beats'>, totalMs: number): TextSpan[] {
     const starts = new Map(timeline.beats.map((beat) => [beat.id, beat.startMs]));
-    const withText = script.beats.filter((beat) => beat.text && starts.has(beat.id));
-    return withText.map((beat, i) => {
-        const text = beat.text!;
-        const next = withText[i + 1];
+    const marked = script.beats.filter((beat) => starts.has(beat.id));
+    return marked.flatMap((beat, i) => {
+        const text = beat.text;
+        if (!text) return [];
+        const next = marked[i + 1];
         const endMs = text.kind === 'end-card' || !next ? totalMs : starts.get(next.id)!;
         return {
             beatId: beat.id,
@@ -119,6 +121,11 @@ export function textSpans(timeline: Timeline, script: Pick<Script, 'beats'>, tot
 
 export function spanAt(spans: TextSpan[], ms: number): TextSpan | undefined {
     return spans.find((span) => ms >= span.startMs && ms < span.endMs);
+}
+
+/** When a callout's span becomes visible: at its beat, or later, when its element first appeared. */
+export function calloutShownFrom(samples: { atMs: number }[] | undefined, span: TextSpan): number {
+    return Math.max(span.startMs, samples?.[0]?.atMs ?? span.startMs);
 }
 
 /** 0 → 1 over `fadeMs` after the start, 1 → 0 over `fadeMs` before the end. */
@@ -141,7 +148,8 @@ function lerpBox(from: Box, to: Box, t: number): Box {
  * moving element smoothly instead of jumping every 100 ms.
  */
 export function boxAt(samples: { atMs: number; box: Box }[] | undefined, ms: number, easeMs: number): Box | undefined {
-    if (!samples || samples.length === 0) return undefined;
+    // Nothing before the element was first seen: a callout waits for what it points at.
+    if (!samples || samples.length === 0 || ms < samples[0]!.atMs) return undefined;
     const progress = (from: number, to: number) =>
         easeInOut(Math.min(1, Math.max(0, (to - from) / Math.max(1, easeMs))));
     let from = samples[0]!.box;
