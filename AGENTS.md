@@ -28,6 +28,10 @@ features. `PLAN.md` is the design; read it before changing anything structural.
   the paid voice characters it would spend, then asks for confirmation; without a terminal it
   refuses unless given `--yes`. Do not pass `--yes`: ask the maintainer to run it, or render the one
   video you changed.
+- **The hero is embedded on kubermeister.dev.** Whenever `hero/` changes (`script.yml`, `scene.ts`,
+  or anything that alters its rendered output), open a pull request in `../website` on its own
+  branch that updates the hero video there, and link the two PRs to each other. The website's
+  `AGENTS.md` sets its branch, PR and commit conventions.
 
 ## Adding a feature video
 
