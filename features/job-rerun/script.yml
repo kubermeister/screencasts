@@ -1,0 +1,44 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: job-rerun
+title: Job rerun
+since: 0.10.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice: kokoro
+beats:
+  - id: intro
+    text: { kind: title, value: 'Run a finished Job again' }
+    say: 'Kubermeister runs a job again, even though a job cannot be restarted in place.'
+  - id: completed
+    text:
+      kind: callout
+      value: 'This job has completed, and its spec is immutable'
+      anchor: status
+      side: auto
+    say: 'This migration job has completed. Its spec is immutable, so Kubernetes will not run it a second time.'
+    hold: 2s
+  - id: run-again
+    text: { kind: caption, value: 'Job › Run again' }
+    say: 'Press run again.'
+  - id: confirm
+    text:
+      kind: callout
+      value: 'Deleted and submitted again with the same spec'
+      anchor: dialog
+      side: auto
+    say: 'The job is deleted and submitted again with the same spec, once its name is free. The pods of the previous run go with it.'
+    hold: 2.6s
+  - id: running
+    text: { kind: caption, value: 'Same name, new run' }
+    say: 'Confirm, and the job comes back under the same name, running again.'
+  - id: complete
+    text:
+      kind: callout
+      value: 'Complete again, a few seconds later'
+      anchor: status
+      side: auto
+    say: 'A few seconds later, it has completed again.'
+    hold: 2s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

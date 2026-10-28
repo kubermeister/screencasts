@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: quotas-and-limits
+title: Quotas and limits
+since: 0.10.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice: kokoro
+beats:
+  - id: intro
+    text: { kind: title, value: 'What a namespace may use, and what it does' }
+    say: 'Kubermeister shows what a namespace may use, and how much of it is already taken.'
+  - id: quotas
+    text: { kind: caption, value: 'Overview › Quotas: one row per resource of each quota' }
+    say: 'The quotas screen lists every resource quota, one row per resource it limits.'
+    hold: 2s
+  - id: used
+    text:
+      kind: callout
+      value: 'Used against the hard limit, what remains, and a meter'
+      anchor: quota-row
+      side: auto
+    say: 'Each row reads what is used against the hard limit, what remains, and a meter of how full it is.'
+    hold: 2.6s
+  - id: limits
+    text: { kind: caption, value: 'Overview › Limits: the limit ranges, one row per resource' }
+    say: 'The limits screen lists the limit ranges the same way, one row per resource and type.'
+    hold: 2s
+  - id: defaults
+    text:
+      kind: callout
+      value: 'The default request and limit a container inherits'
+      anchor: limit-row
+      side: auto
+    say: 'Here is the default request and the default limit a container inherits when it asks for nothing.'
+    hold: 2.6s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }
