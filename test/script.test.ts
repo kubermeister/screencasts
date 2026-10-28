@@ -4,7 +4,10 @@ import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
 import {
     allVideoIds,
+    featureFolders,
+    GROUPS,
     holdMs,
+    isGroup,
     loadScript,
     parseDuration,
     ScriptError,
@@ -13,6 +16,26 @@ import {
 } from '../src/script';
 
 const FIXTURES = join(import.meta.dirname, 'fixtures');
+
+describe('the features folder', () => {
+    // The folder is the group: a misspelt one would silently start a group of its own.
+    it('holds only the known groups', () => {
+        const unknown = featureFolders().filter((folder) => !isGroup(folder.group));
+        expect(unknown).toEqual([]);
+    });
+
+    it('has every group in use', () => {
+        const used = new Set(featureFolders().map((folder) => folder.group));
+        expect([...GROUPS].filter((group) => !used.has(group))).toEqual([]);
+    });
+
+    // Every command names a video by its id alone, so one id in two groups would be two videos sharing
+    // one output folder.
+    it('uses each id once across groups', () => {
+        const ids = featureFolders().map((folder) => folder.id);
+        expect(ids.filter((id, i) => ids.indexOf(id) !== i)).toEqual([]);
+    });
+});
 
 describe('every committed script', () => {
     it('exists', () => {

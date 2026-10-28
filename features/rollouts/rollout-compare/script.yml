@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../../schema/script.schema.json
+id: rollout-compare
+title: Rollout compare
+since: 0.3.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice: kokoro
+beats:
+  - id: intro
+    text: { kind: title, value: 'Compare any two rollouts' }
+    say: 'Kubermeister compares any two rollouts of a deployment, side by side.'
+  - id: history
+    text: { kind: caption, value: 'Deployment › History lists every revision' }
+    say: 'The history tab lists every revision the deployment has had.'
+  - id: pick
+    text: { kind: caption, value: 'Pick a From and a To revision' }
+    say: 'Pick a from revision and a to revision.'
+  - id: diff
+    text:
+      kind: callout
+      value: 'Only what changed between them: here, the restart'
+      anchor: revision-diff
+      side: auto
+    say: 'The diff shows only what changed between them. Here, it is the restart.'
+    hold: 2.6s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

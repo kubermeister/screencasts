@@ -40,20 +40,54 @@ export interface Script {
     beats: Beat[];
 }
 
-/** The folders a video can live in: one per feature, plus the overview and the hero. */
-export function videoDir(id: string): string {
-    if (id === 'overview' || id === 'hero') return join(ROOT, id);
-    return join(ROOT, 'features', id);
+/**
+ * The groups a feature video belongs to, by what a viewer is looking for rather than by the app's
+ * sidebar: the folder under features/ is the group, and the list here is what the scaffold and the
+ * tests accept. An id is unique across groups, so a video is still named by its id alone.
+ */
+export const GROUPS = ['cluster', 'workloads', 'rollouts', 'logs', 'manifests', 'helm', 'navigation'] as const;
+export type Group = (typeof GROUPS)[number];
+
+export function isGroup(name: string): name is Group {
+    return (GROUPS as readonly string[]).includes(name);
 }
 
-/** Every video in the repository: each folder of features/, then the overview and the hero. */
-export function allVideoIds(): string[] {
-    const features = existsSync(join(ROOT, 'features'))
-        ? readdirSync(join(ROOT, 'features'), { withFileTypes: true })
+const FEATURES_DIR = join(ROOT, 'features');
+
+function subdirectories(dir: string): string[] {
+    return existsSync(dir)
+        ? readdirSync(dir, { withFileTypes: true })
               .filter((entry) => entry.isDirectory())
               .map((entry) => entry.name)
               .sort()
         : [];
+}
+
+/** Every feature folder, by group, as the directory holds them (a folder in no known group included). */
+export function featureFolders(): { group: string; id: string }[] {
+    return subdirectories(FEATURES_DIR).flatMap((group) =>
+        subdirectories(join(FEATURES_DIR, group)).map((id) => ({ group, id })),
+    );
+}
+
+/** The group a feature lives in, or undefined for the overview, the hero and an id with no folder. */
+export function groupOf(id: string): string | undefined {
+    return featureFolders().find((folder) => folder.id === id)?.group;
+}
+
+/** The folder a video lives in: features/<group>/<id>, or the overview's or the hero's own. */
+export function videoDir(id: string): string {
+    if (id === 'overview' || id === 'hero') return join(ROOT, id);
+    const group = groupOf(id);
+    // No folder yet (the scaffold, a typo): a path in no group, so what reads it says so.
+    return join(FEATURES_DIR, group ?? '', id);
+}
+
+/** Every video in the repository: each feature by group, then the overview and the hero. */
+export function allVideoIds(): string[] {
+    const features = featureFolders()
+        .map((folder) => folder.id)
+        .sort();
     return [...features, ...['overview', 'hero'].filter((id) => existsSync(join(ROOT, id, 'script.yml')))];
 }
 

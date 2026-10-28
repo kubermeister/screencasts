@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../../schema/script.schema.json
+id: cronjob-run-now
+title: CronJob run now
+since: 0.3.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice: kokoro
+beats:
+  - id: intro
+    text: { kind: title, value: 'Run a CronJob now, or hold its schedule' }
+    say: 'Kubermeister runs a cron job off its schedule, and suspends the schedule when you need it quiet.'
+  - id: run-now
+    text: { kind: caption, value: 'CronJob › Run now starts a job from its template' }
+    say: "Press run now, and a job is created from the cron job's template, right away."
+  - id: job
+    text:
+      kind: callout
+      value: 'Owned by nobody: history limits never sweep it away'
+      anchor: job
+      side: auto
+    say: "The job is owned by nobody, so the cron job's history limits never sweep it away. It stays in the jobs list until you delete it."
+    hold: 2.6s
+  - id: suspend
+    text: { kind: caption, value: 'Suspend stops new runs; running jobs are left alone' }
+    say: 'Suspend stops the schedule from starting anything new. Jobs already running are left alone.'
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

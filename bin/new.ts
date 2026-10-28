@@ -1,12 +1,12 @@
 // First: everything after it may read process.env as it loads.
 import '../src/env';
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { ROOT } from '../src/config';
 import { appVersion, checkApp } from '../src/harness/app';
-import { videoDir } from '../src/script';
+import { GROUPS, groupOf, isGroup } from '../src/script';
 
-const USAGE = 'Usage: npm run new -- <id>   (lowercase words joined by hyphens, e.g. text-size)';
+const USAGE = `Usage: npm run new -- <group>/<id>   (group: ${GROUPS.join(' | ')}; id: lowercase words joined by hyphens, e.g. navigation/text-size)`;
 
 function title(id: string): string {
     const words = id.split('-').join(' ');
@@ -14,7 +14,7 @@ function title(id: string): string {
 }
 
 function scriptYaml(id: string, since: string): string {
-    return `# yaml-language-server: $schema=../../schema/script.schema.json
+    return `# yaml-language-server: $schema=../../../schema/script.schema.json
 id: ${id}
 title: ${title(id)}
 since: ${since}
@@ -32,7 +32,7 @@ beats:
 `;
 }
 
-const SCENE_TS = `import { defineScene } from '../../src/harness/scene';
+const SCENE_TS = `import { defineScene } from '../../../src/harness/scene';
 
 export default defineScene({
     // Before the video starts: not filmed.
@@ -54,16 +54,18 @@ export default defineScene({
 });
 `;
 
-function main(id: string | undefined): number {
-    if (!id || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(id) || id === 'overview' || id === 'hero') {
+function main(target: string | undefined): number {
+    const [group, id, ...rest] = (target ?? '').split('/');
+    if (!group || !id || rest.length > 0 || !isGroup(group) || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(id)) {
         console.error(USAGE);
         return 2;
     }
-    const dir = videoDir(id);
-    if (existsSync(dir)) {
-        console.error(`${relative(ROOT, dir)} already exists; edit it, or pick another id`);
+    const taken = groupOf(id);
+    if (taken !== undefined) {
+        console.error(`features/${taken}/${id} already exists; edit it, or pick another id`);
         return 1;
     }
+    const dir = join(ROOT, 'features', group, id);
     checkApp();
     const since = appVersion();
     mkdirSync(dir, { recursive: true });
