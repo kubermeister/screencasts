@@ -1,7 +1,6 @@
 # expect: voice: must be one of kokoro, openai, elevenlabs
 id: demo
 title: Demo
-since: 0.10.0
 voice: { provider: kokoro, voice: af_heart }
 beats:
   - id: intro

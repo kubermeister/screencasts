@@ -30,7 +30,6 @@ export interface Beat {
 export interface Script {
     id: string;
     title: string;
-    since: string;
     formats?: Format[];
     theme?: Theme;
     /** The provider that speaks the `say` lines; how it sounds comes from `.env`. Absent is silent. */

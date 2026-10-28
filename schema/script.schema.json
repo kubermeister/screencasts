@@ -5,7 +5,7 @@
   "description": "One video: its beats, the text shown on screen and the voiceover. The order of rules a schema cannot say (title first, end card last, unique beat ids, id equal to the folder) is checked by src/script.ts.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["id", "title", "since", "beats"],
+  "required": ["id", "title", "beats"],
   "not": { "required": ["voice", "voices"] },
   "properties": {
     "id": {
@@ -16,11 +16,6 @@
       "description": "Human title, used in the end card and logs.",
       "type": "string",
       "minLength": 1
-    },
-    "since": {
-      "description": "The app version that shipped the feature (semver, no leading v).",
-      "type": "string",
-      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$"
     },
     "formats": {
       "description": "Which outputs to render; both by default.",

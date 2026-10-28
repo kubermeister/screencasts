@@ -70,7 +70,6 @@ Read in place, never copied, never modified:
 | Electron binary       | `node_modules/electron` (its default export is the binary path)                                                  | `executablePath` for the launch                     |
 | Demo seed             | `tests/demo/fixtures/seed.yaml`, `seed-custom.yaml`                                                              | Seeding the demo cluster                            |
 | Demo Helm chart       | `tests/demo/fixtures/chart/`                                                                                     | `helm install` + `helm upgrade`                     |
-| App version           | `package.json` → `version`                                                                                       | Checking a script's `since`                         |
 | Reference (read only) | `tests/demo/harness/{cluster,launch,history}.ts`, `tests/demo/shots/screenshots.test.ts`, `tests/demo/README.md` | The patterns this harness copies; working selectors |
 
 **Why screencasts copies the harness code instead of importing it:** importing TypeScript across
@@ -157,7 +156,6 @@ types by hand to match (a unit test checks they agree on a sample).
 # features/navigation/text-size/script.yml
 id: text-size # must equal the folder name
 title: Text size # human title, used in the end card and logs
-since: 0.10.0 # app version that shipped it (semver, no leading v)
 formats: [video, reel] # any non-empty subset; default both
 theme: dark # dark | light; default dark
 voice: kokoro # optional; kokoro | openai | elevenlabs; absent = no voiceover
@@ -181,7 +179,6 @@ beats:
 Rules the schema and `src/script.ts` enforce:
 
 - `id`: `^[a-z0-9]+(-[a-z0-9]+)*$`, equals the folder name.
-- `since`: semver `X.Y.Z`.
 - `beats`: 1–20 items; `beats[].id` same pattern as `id`, unique within the script.
 - `text` is optional per beat (a beat can be pure action). `kind` is one of `title`, `caption`,
   `callout`, `end-card`. `value` length: title ≤ 60, caption ≤ 80, callout ≤ 70, end-card ≤ 60
@@ -206,8 +203,10 @@ Rules the schema and `src/script.ts` enforce:
 - Unknown keys are errors (`additionalProperties: false`).
 - No text and no `say` names a release (added after Phase 11 at the maintainer's request): a video
   introduces a feature, and a version dates it. The end card is the logo and `kubermeister.dev`,
-  silent: no `say` on it.
-  `since` stays, and only gates the pre-flight. `test/script.test.ts` checks it.
+  silent: no `say` on it. `test/script.test.ts` checks it. A `since` field (the app version that
+  shipped the feature, gating the pre-flight) was dropped on 2026-10-28: every scene is written
+  against the checkout beside this repository and moves with it, and the field had become a
+  placeholder for half the scripts.
 
 **Beat semantics (the contract between scene, voice and render):**
 
@@ -294,9 +293,7 @@ Pre-flight checks before recording (each failure prints the exact fix):
 1. The app directory exists and has `package.json` with `"name": "kubermeister"`.
 2. `out/main/index.mjs` exists and is newer than every file under the app's `src/`; otherwise
    "Run `npm run build` in <app path>".
-3. The app version ≥ the script's `since`; otherwise "This checkout of the app (vX) predates
-   <id> (since vY). Check out a later version".
-4. Docker is reachable; `ffmpeg` is on `PATH`.
+3. Docker is reachable; `ffmpeg` is on `PATH`.
 
 **What reruns (default, without `--only`/`--fresh`):** `out/<id>/state.json` stores keys:
 
@@ -492,8 +489,8 @@ Acceptance:
 - `test/scenes.test.ts`: for each feature, the `beat('…')` calls found in `scene.ts` (static
   scan with a regex on string literals) equal the script's beat ids, same order; every
   `anchor('…')` name is used by a callout and vice versa.
-- `bin/new.ts <id>`: refuses an existing folder; writes `script.yml` (title, `since` = the app's
-  current version, an intro title beat, one caption beat, an end card) and `scene.ts` (the
+- `bin/new.ts <group>/<id>`: refuses an existing folder; writes `script.yml` (title, an intro title
+  beat, one caption beat, an end card) and `scene.ts` (the
   section 6 skeleton with a TODO in `setup` and `run`).
 - Editors: add `# yaml-language-server: $schema=../../schema/script.schema.json` as the first
   line of every `script.yml` (the scaffold writes it).

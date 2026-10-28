@@ -1,7 +1,6 @@
 # expect: beats[0] (intro).zoom: must be lowercase words joined by hyphens
 id: demo
 title: Demo
-since: 0.10.0
 beats:
   - id: intro
     zoom: Text_Size

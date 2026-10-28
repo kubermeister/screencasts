@@ -110,7 +110,7 @@ async function runVariant({ script, theme, formats }: Run, variant: Variant, arg
 
     let recorded = false;
     if (args.only !== 'render') {
-        checkApp(script);
+        checkApp();
         const app = appKey();
         const scene = sceneKey(script, theme, voiceMs);
         const stale = !footageExists(variant) || state.app !== app || state.scene !== scene;

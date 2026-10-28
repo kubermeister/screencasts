@@ -49,7 +49,7 @@ describe('every committed script', () => {
 
 describe('what a video says', () => {
     // A video introduces a feature; a release number in it dates it, and every later release makes
-    // it read as out of date. `since` stays in the script, where it only gates the pre-flight.
+    // it read as out of date.
     it.each(allVideoIds())('%s names no release', (id) => {
         const script = loadScript(id);
         const versioned = script.beats.flatMap((beat) =>
@@ -89,7 +89,6 @@ describe('the TypeScript types', () => {
     const sample: Script = {
         id: 'demo',
         title: 'Demo',
-        since: '0.10.0',
         formats: ['video', 'reel'],
         theme: 'light',
         voice: 'openai',

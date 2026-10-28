@@ -56,8 +56,8 @@ flowchart TB
     outputs -.- state["state.json<br/>what each stage was made from"]
 ```
 
-1. **Pre-flight** checks the app checkout is built from its current sources and is at least the
-   script's `since`, that Docker is running and that `ffmpeg` is on `PATH`.
+1. **Pre-flight** checks the app checkout is built from its current sources, that Docker is running
+   and that `ffmpeg` is on `PATH`.
 2. **Voice** synthesizes each `say` line that is not cached yet. A line's length decides how long
    its beat waits, so a spoken line always finishes before the scene moves on.
 3. **Record** films the real app against a seeded demo cluster. The scene drives it with Playwright;
@@ -105,8 +105,7 @@ npm run cluster -- up|down|status            # manage the demo cluster explicitl
 Exit codes: 0 success, 1 failure (the message names the feature and the stage), 2 usage error.
 
 Before recording, the CLI checks that the app checkout exists and is built from its current sources,
-that its version is at least the script's `since`, that Docker is reachable and that `ffmpeg` is on
-`PATH`. Each failed check prints the fix.
+that Docker is reachable and that `ffmpeg` is on `PATH`. Each failed check prints the fix.
 
 The demo cluster (`km-screencasts-cluster`, a k3s container seeded from the app's
 `tests/demo/fixtures/`) is kept between runs. `KM_SCREENCASTS_FRESH=1` or `npm run cluster -- down`
