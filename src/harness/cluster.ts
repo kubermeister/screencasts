@@ -27,6 +27,20 @@ export const CHART_PATH = join(DEMO_FIXTURES, 'chart');
 const RELEASE_NAME = 'platform-agent';
 const RELEASE_NAMESPACE = 'platform';
 
+/**
+ * k3s in Docker on a cgroup v2 host (OrbStack, Docker Desktop) needs a cgroup namespace of its own.
+ * With the host's, which `K3sContainer` asks for along with the host's cgroup tree, the kubelet loses
+ * every pod's cgroup: pods restart every few minutes and metrics-server never reports.
+ */
+class ScreencastsK3sContainer extends K3sContainer {
+    constructor(image: string) {
+        super(image);
+        // Assigned, not set: the option is newer than the HostConfig type testcontainers uses.
+        Object.assign(this.hostConfig, { CgroupnsMode: 'private' });
+        delete this.hostConfig.Binds;
+    }
+}
+
 /** The workloads that must be up before filming; the three broken ones never will be, on purpose. */
 const HEALTHY: readonly [string, string][] = [
     ['production', 'checkout'],
@@ -80,7 +94,7 @@ export async function ensureCluster(): Promise<void> {
     // cluster an IngressClass, servicelb keeps traefik's Service from sitting Pending. The command
     // is given in full because `K3sContainer` disables traefik by default, and `--node-name`
     // because a k3s node otherwise takes the container's id as its name.
-    const started = await new K3sContainer(K3S_IMAGE)
+    const started = await new ScreencastsK3sContainer(K3S_IMAGE)
         .withCommand(['server', `--node-name=${NODE_NAME}`])
         .withName(CONTAINER_NAME)
         .withReuse()
