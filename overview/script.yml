@@ -1,49 +1,72 @@
 # yaml-language-server: $schema=../schema/script.schema.json
+# The narrated version of the hero: the same fifteen moments, one spoken sentence each, for the
+# website's Watch button and the channel. hero/scene.ts and overview/scene.ts stay in step.
 id: overview
 title: Kubermeister
 formats: [video]
+# The maintainer's ElevenLabs voice, from .env.
+voice: elevenlabs
 theme: dark
 beats:
   - id: intro
-    text: { kind: title, value: 'Kubermeister: Kubernetes on your desktop' }
-    hold: 4s
+    text: { kind: title, value: 'A thoughtful desktop client for Kubernetes' }
+    hold: 2s
+    say: 'Kubermeister is a desktop client for Kubernetes: a window onto all your clusters.'
   - id: summary
-    text:
-      kind: callout
-      value: 'Health, usage and what needs attention, at a glance'
-      anchor: alerts
-      side: auto
-    hold: 6.5s
+    text: { kind: caption, value: 'Health, usage and alerts on one screen' }
+    hold: 2s
+    say: 'It opens on one screen: health, usage, and what needs attention.'
   - id: palette
-    text: { kind: caption, value: '⌘K takes you to any screen or resource' }
-    hold: 1.5s
+    text: { kind: caption, value: '⌘K: any screen, any object' }
+    hold: 2s
+    say: 'Command K takes you to any screen or any object.'
   - id: deployments
-    text: { kind: caption, value: 'Every deployment, live, with scaling at hand' }
-    hold: 6s
+    text: { kind: caption, value: 'Every deployment, live' }
+    hold: 2s
+    say: 'Every deployment, live, with usage in the row.'
+  - id: scale
+    text: { kind: caption, value: 'Scale to an exact number' }
+    hold: 2s
+    say: 'Scale to an exact number, right from the list.'
   - id: logs
-    text: { kind: caption, value: 'Logs from every pod of a workload, in one stream' }
-    hold: 9s
+    text: { kind: caption, value: 'Every pod’s logs, one stream' }
+    hold: 2s
+    say: 'Open the logs, and every pod of the workload is already streaming, in one stream.'
+  - id: shell
+    text: { kind: caption, value: 'A shell inside the pod' }
+    hold: 2s
+    say: 'When you need to get inside, a shell opens in the pod itself.'
   - id: compare
-    text:
-      kind: callout
-      value: 'Compare any two rollouts of a deployment'
-      anchor: revision-diff
-      side: auto
-    hold: 6s
-  - id: drain
-    text:
-      kind: callout
-      value: 'Drain a node knowing how many pods it will evict'
-      anchor: drain-plan
-      side: auto
-    hold: 6s
+    text: { kind: caption, value: 'Diff any two rollouts' }
+    hold: 2s
+    say: 'Every rollout is kept, and any two can be compared line by line.'
   - id: review
-    text:
-      kind: callout
-      value: 'Review every manifest edit before it is saved'
-      anchor: manifest-diff
-      side: auto
-    hold: 6s
+    text: { kind: caption, value: 'Review every edit before it is saved' }
+    hold: 2s
+    say: 'Every manifest edit is reviewed as a diff before it is saved.'
+  - id: helm
+    text: { kind: caption, value: 'Helm releases, judged by their objects' }
+    hold: 2s
+    say: 'A Helm release is judged by the objects it rendered, read live from the cluster.'
+  - id: drain
+    text: { kind: caption, value: 'A drain that shows its plan first' }
+    hold: 2s
+    say: 'A drain shows its plan, and how many pods it will evict, before anything is written.'
+  - id: forward
+    text: { kind: caption, value: 'Port forwards that survive a rollout' }
+    hold: 2s
+    say: 'A port forward targets the service, so it survives the rollout that would end it.'
+  - id: secret
+    text: { kind: caption, value: 'Secrets, one key at a time' }
+    hold: 2s
+    say: 'Secrets stay masked, and are revealed one key at a time, only when asked.'
+  - id: custom
+    text: { kind: caption, value: 'Your CRDs, with their own columns' }
+    hold: 2s
+    say: 'Your custom resources are listed with the columns their definitions declare.'
+  - id: more
+    text: { kind: caption, value: 'And much more. Free and open source.' }
+    hold: 2s
+    say: 'And that is only part of it. Free and open source, on macOS, Windows and Linux.'
   - id: outro
     text: { kind: end-card, value: 'kubermeister.dev' }
-    hold: 2.5s

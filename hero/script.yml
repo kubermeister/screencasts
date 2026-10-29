@@ -1,70 +1,57 @@
 # yaml-language-server: $schema=../schema/script.schema.json
-# The main video of kubermeister.dev: the promise of the landing page, then the moments that keep it.
-# It opens and closes on the cluster summary.
+# The landing page's hero: a silent montage that plays muted, on loop, to someone who has not decided
+# to watch yet. One moment per thing a Kubernetes person cares about, two seconds each, a phrase of
+# three to five words on screen, no narration. It opens and closes on the cluster summary, so the
+# loop is seamless; the narrated version of the same tour is overview/.
 id: hero
 title: Kubermeister
 formats: [video]
 theme: dark
-# The maintainer's ElevenLabs voice, from .env; the one paid voice in the repository besides text-size.
-voice: elevenlabs
-# Each beat's action in scene.ts is what its text is about, so the screen changes under the text that
-# describes it, never under the previous one.
 beats:
   - id: intro
     text: { kind: title, value: 'A thoughtful desktop client for Kubernetes' }
-    say: 'Kubermeister is a desktop client for Kubernetes: a window onto all your clusters.'
-    hold: 4s
+    hold: 2.5s
   - id: summary
-    text:
-      kind: callout
-      value: 'Health, usage and what needs attention, the moment it opens'
-      anchor: alerts
-      side: auto
-    say: 'Health, usage and what needs attention, the moment it opens.'
-    hold: 4s
+    text: { kind: caption, value: 'Health, usage and alerts on one screen' }
+    hold: 2s
   - id: palette
-    text: { kind: caption, value: '⌘K takes you to any screen or resource' }
-    say: 'Command K takes you to any screen or resource.'
-    hold: 4s
+    text: { kind: caption, value: '⌘K: any screen, any object' }
+    hold: 2s
   - id: deployments
-    text: { kind: caption, value: 'Every deployment, live, with scaling and rollouts at hand' }
-    say: 'Every deployment, live, with scaling, restarts and rollouts at hand.'
-    hold: 4s
+    text: { kind: caption, value: 'Every deployment, live' }
+    hold: 2s
+  - id: scale
+    text: { kind: caption, value: 'Scale to an exact number' }
+    hold: 2.2s
   - id: logs
-    text: { kind: caption, value: 'Logs from every pod of a workload, already following' }
-    say: 'Open the logs, and every pod of the workload is already streaming: in order, and coloured by pod.'
-    hold: 4s
+    text: { kind: caption, value: 'Every pod’s logs, one stream' }
+    hold: 2.5s
   - id: shell
-    text: { kind: caption, value: 'A shell inside the pod, when you need one' }
-    say: 'When you need to get inside, a shell opens in the pod itself, and ends when you leave it.'
-    hold: 4s
-  - id: history
-    text:
-      kind: callout
-      value: 'Every rollout, kept as a history of revisions'
-      anchor: rollout-history
-      side: auto
-    say: 'Every rollout of a deployment is kept as a history of revisions.'
-    hold: 4s
+    text: { kind: caption, value: 'A shell inside the pod' }
+    hold: 2.5s
   - id: compare
-    text:
-      kind: callout
-      value: 'See what changed between two rollouts before you roll back'
-      anchor: revision-diff
-      side: auto
-    say: 'Pick two, and see exactly what changed, before you roll back.'
-    hold: 4s
+    text: { kind: caption, value: 'Diff any two rollouts' }
+    hold: 2.2s
+  - id: review
+    text: { kind: caption, value: 'Review every edit before it is saved' }
+    hold: 2.5s
+  - id: helm
+    text: { kind: caption, value: 'Helm releases, judged by their objects' }
+    hold: 2.2s
   - id: drain
-    text:
-      kind: callout
-      value: 'A drain that shows its plan before it touches anything'
-      anchor: drain-plan
-      side: auto
-    say: 'Drain a node knowing how many pods it will evict, before anything is written.'
-    hold: 4s
-  - id: promise
-    text: { kind: caption, value: 'And much more. Free and open source, on macOS, Windows and Linux.' }
-    say: 'And that is only part of it: there is much more inside. Free and open source, on macOS, Windows and Linux.'
-    hold: 4s
+    text: { kind: caption, value: 'A drain that shows its plan first' }
+    hold: 2.2s
+  - id: forward
+    text: { kind: caption, value: 'Port forwards that survive a rollout' }
+    hold: 2.2s
+  - id: secret
+    text: { kind: caption, value: 'Secrets, one key at a time' }
+    hold: 2.2s
+  - id: custom
+    text: { kind: caption, value: 'Your CRDs, with their own columns' }
+    hold: 2.2s
+  - id: more
+    text: { kind: caption, value: 'And much more. Free and open source.' }
+    hold: 2.5s
   - id: outro
     text: { kind: end-card, value: 'kubermeister.dev' }
