@@ -10,6 +10,8 @@ const LOCAL_PORT = '38090';
 const SECRET = 'payments-credentials';
 const CRD = 'queues.messaging.example.com';
 const RELEASE = { namespace: 'platform', name: 'platform-agent' };
+/** How long a moment's result stays on screen before the next caption, however long its action took. */
+const DWELL_MS = 1_000;
 const REVISION = 'jsonpath={.metadata.annotations.deployment\\.kubernetes\\.io/revision}';
 
 /** The newest running pod of the deployment: an older one may still be shutting down after a restart. */
@@ -50,7 +52,7 @@ export default defineScene({
         await summary.getByTestId('alerts').waitFor({ timeout: 60_000 });
         await focus(summary);
     },
-    async run({ window, beat, goto, click, press, type, glide, kubectl }) {
+    async run({ window, beat, goto, click, press, type, glide, hold, kubectl }) {
         const summary = window.getByTestId('cluster-summary');
         const palette = window.getByRole('dialog', { name: 'Quick actions' });
         const deployments = window.getByTestId('deployments-table');
@@ -82,6 +84,7 @@ export default defineScene({
             await click(window.getByRole('dialog').getByRole('spinbutton', { name: 'Replicas' }));
             await press('ControlOrMeta+a');
             await type('4');
+            await hold(DWELL_MS);
         });
 
         await beat('logs', async () => {
@@ -95,6 +98,7 @@ export default defineScene({
                 .getByText(DEPLOYMENT)
                 .first()
                 .waitFor({ timeout: 90_000 });
+            await hold(DWELL_MS);
         });
 
         await beat('shell', async () => {
@@ -105,6 +109,7 @@ export default defineScene({
             await terminal.locator('.xterm-rows', { hasText: '/ #' }).waitFor({ timeout: 60_000 });
             await click(terminal);
             await type('hostname\n');
+            await hold(DWELL_MS);
         });
 
         // Leaving the pod ends the shell. The app already compares the two latest revisions.
@@ -117,6 +122,7 @@ export default defineScene({
                 .getByText('restartedAt')
                 .first()
                 .waitFor({ timeout: 60_000 });
+            await hold(DWELL_MS);
         });
 
         await beat('review', async () => {
@@ -131,6 +137,7 @@ export default defineScene({
             await type('5');
             await click(manifest.getByRole('button', { name: 'Review changes' }));
             await window.getByTestId('manifest-diff').getByText('replicas: 5').first().waitFor({ timeout: 30_000 });
+            await hold(DWELL_MS);
         });
 
         // Backed all the way out, never saved, before the navigation the discard guard would stop.
@@ -139,7 +146,8 @@ export default defineScene({
             await click(manifest.getByRole('button', { name: 'Cancel' }));
             await click(window.getByRole('button', { name: 'Discard' }));
             await goto(`/helm/releases/${RELEASE.namespace}/${RELEASE.name}`);
-            await window.getByTestId('release-health').waitFor({ timeout: 60_000 });
+            await window.locator('[data-testid="release-health"][data-health="Healthy"]').waitFor({ timeout: 60_000 });
+            await hold(DWELL_MS);
         });
 
         await beat('drain', async () => {
@@ -148,6 +156,7 @@ export default defineScene({
             await drain.waitFor({ timeout: 90_000 });
             await click(drain);
             await window.getByTestId('drain-plan').waitFor({ timeout: 60_000 });
+            await hold(DWELL_MS);
         });
 
         // The plan is only shown: the dialog is dismissed and the node is never drained.
@@ -158,6 +167,7 @@ export default defineScene({
             await type(LOCAL_PORT);
             await click(window.getByRole('button', { name: 'Start' }));
             await window.getByTestId('port-forward-status').getByText('Listening').waitFor({ timeout: 30_000 });
+            await hold(DWELL_MS);
         });
 
         // The forward is stopped from the top bar, as a user would, so none is live when the app closes.
@@ -169,6 +179,7 @@ export default defineScene({
             const keys = window.getByTestId('secret-keys');
             await click(keys.getByRole('button', { name: 'Reveal DATABASE_URL' }));
             await window.getByTestId('value-DATABASE_URL').getByText('postgres://').waitFor({ timeout: 30_000 });
+            await hold(DWELL_MS);
         });
 
         await beat('custom', async () => {
@@ -177,6 +188,7 @@ export default defineScene({
                 .getByTestId('instances-table')
                 .locator('[data-instance="receipt-emails"]')
                 .waitFor({ timeout: 60_000 });
+            await hold(DWELL_MS);
         });
 
         await beat('more', async () => {
