@@ -210,11 +210,15 @@ Rules the schema and `src/script.ts` enforce:
 
 **Beat semantics (the contract between scene, voice and render):**
 
-- A beat **starts** when the scene calls `beat(id)`. Its text appears at the start.
-- `beat(id)` resolves after `max(hold, voiceDuration(id) + 300ms)`; only then does the scene go on.
-  So a spoken line always finishes before the next action.
-- A beat's text stays on screen until the next beat with text starts, or for an `end-card`, until
-  the end of the video.
+- A beat **starts** when the scene calls `beat(id, action?)`. Its text appears at the start.
+- The `action`, when given, runs under the text: it is what the text is about, so the viewer sees
+  the thing happen while reading or hearing about it. A callout whose element the action brings on
+  screen is drawn from the moment the element appears.
+- `beat(id, action?)` resolves after the action and after `max(hold, voiceDuration(id) + 300ms)` from
+  the start, whichever is later; only then does the scene go on. So a spoken line always finishes
+  before the next beat.
+- A beat's text stays on screen until the next beat starts, or for an `end-card`, until the end of
+  the video. A beat without text shows nothing, so a scene can end a callout when its element goes.
 - The video starts 500 ms before the first beat and ends 1.5 s after the last beat resolves.
 
 ## 6. `scene.ts`
@@ -249,20 +253,20 @@ export default defineScene({
 
 Director API (`src/harness/director.ts`), all methods on the object passed to `setup`/`run`/`cleanup`:
 
-| Method                  | Behaviour                                                                                                                                                                                         |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `window`                | The Playwright `Page` of the app window.                                                                                                                                                          |
-| `app`                   | The `ElectronApplication`.                                                                                                                                                                        |
-| `goto(path)`            | Sets `location.hash` to `#<path>` (the app uses hash routing), waits 400 ms.                                                                                                                      |
-| `beat(id)`              | Records the beat start in the timeline, then waits as in section 5. Throws on an id not in the script or a repeated id.                                                                           |
-| `anchor(name, locator)` | Registers an element; its box (CSS px) is recorded at the start of every beat and every 100 ms during a callout beat. Throws if the name is not used by any callout or zoom.                      |
-| `focus(locator)`        | Records what matters on screen from now on (its box, once). The reel rests on the latest focus when no callout or cursor movement needs the crop; called in `setup`, it is where the reel starts. |
-| `glide(locator)`        | Moves the drawn cursor to the element's centre: ease-in-out, steps of 16 ms, step count `clamp(round(distance/18), 12, 45)`. Waits for visibility (60 s) and scrolls into view first.             |
-| `click(locator)`        | `glide`, wait 150 ms, mouse down/up, wait 250 ms.                                                                                                                                                 |
-| `type(text)`            | `keyboard.type` with 90 ms per key.                                                                                                                                                               |
-| `press(keys)`           | `keyboard.press`, then 200 ms.                                                                                                                                                                    |
-| `hold(ms)`              | Waits.                                                                                                                                                                                            |
-| `kubectl(args)`         | Runs kubectl in the demo cluster (for setup, e.g. creating a second rollout).                                                                                                                     |
+| Method                  | Behaviour                                                                                                                                                                                              |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `window`                | The Playwright `Page` of the app window.                                                                                                                                                               |
+| `app`                   | The `ElectronApplication`.                                                                                                                                                                             |
+| `goto(path)`            | Sets `location.hash` to `#<path>` (the app uses hash routing), waits 400 ms.                                                                                                                           |
+| `beat(id, action?)`     | Records the beat start in the timeline, runs `action` if given, then waits as in section 5. Throws on an id not in the script, a repeated id, or a call from inside another beat's action.             |
+| `anchor(name, locator)` | Registers an element; its box (CSS px) is sampled every 100 ms, from the start of each callout or zoom beat that uses it, once it is on screen. Throws if the name is not used by any callout or zoom. |
+| `focus(locator)`        | Records what matters on screen from now on (its box, once). The reel rests on the latest focus when no callout or cursor movement needs the crop; called in `setup`, it is where the reel starts.      |
+| `glide(locator)`        | Moves the drawn cursor to the element's centre: ease-in-out, steps of 16 ms, step count `clamp(round(distance/18), 12, 45)`. Waits for visibility (60 s) and scrolls into view first.                  |
+| `click(locator)`        | `glide`, wait 150 ms, mouse down/up, wait 250 ms.                                                                                                                                                      |
+| `type(text)`            | `keyboard.type` with 90 ms per key.                                                                                                                                                                    |
+| `press(keys)`           | `keyboard.press`, then 200 ms.                                                                                                                                                                         |
+| `hold(ms)`              | Waits.                                                                                                                                                                                                 |
+| `kubectl(args)`         | Runs kubectl in the demo cluster (for setup, e.g. creating a second rollout).                                                                                                                          |
 
 At the end of `run`, the harness checks every beat in the script was marked, in order. A missing or
 out-of-order beat fails the recording naming the beat.

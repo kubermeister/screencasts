@@ -29,10 +29,11 @@ export default defineScene({
         await beat('intro');
         await beat('traffic');
         await beat('configuration');
-        await beat('follow');
-        await click(configuration.getByRole('link', { name: 'checkout-config' }).first());
-        await window.getByTestId('configmap-page').waitFor({ timeout: 60_000 });
-        await focus(window.getByTestId('configmap-page'));
+        await beat('follow', async () => {
+            await click(configuration.getByRole('link', { name: 'checkout-config' }).first());
+            await window.getByTestId('configmap-page').waitFor({ timeout: 60_000 });
+            await focus(window.getByTestId('configmap-page'));
+        });
         await beat('outro');
     },
     async cleanup() {},

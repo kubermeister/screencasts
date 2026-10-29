@@ -31,17 +31,20 @@ export default defineScene({
         anchor('progress', progress);
         anchor('history', history);
         await beat('intro');
-        await click(page.getByRole('button', { name: 'Pause' }));
-        await progress.getByText('Paused').waitFor({ timeout: 30_000 });
-        await beat('pause');
-        await beat('resume');
-        await click(page.getByRole('button', { name: 'Resume' }));
-        await page.getByRole('button', { name: 'Pause' }).waitFor({ timeout: 30_000 });
-        await click(window.getByRole('tab', { name: /History/ }));
-        // The Roll back button is only shown; pressing it would rewrite the deployment for good.
-        await history.getByRole('button', { name: 'Roll back' }).first().waitFor({ timeout: 60_000 });
-        await focus(history);
-        await beat('history');
+        await beat('pause', async () => {
+            await click(page.getByRole('button', { name: 'Pause' }));
+            await progress.getByText('Paused').waitFor({ timeout: 30_000 });
+        });
+        await beat('resume', async () => {
+            await click(page.getByRole('button', { name: 'Resume' }));
+            await page.getByRole('button', { name: 'Pause' }).waitFor({ timeout: 30_000 });
+        });
+        await beat('history', async () => {
+            await click(window.getByRole('tab', { name: /History/ }));
+            // The Roll back button is only shown; pressing it would rewrite the deployment for good.
+            await history.getByRole('button', { name: 'Roll back' }).first().waitFor({ timeout: 60_000 });
+            await focus(history);
+        });
         await beat('outro');
     },
     async cleanup({ kubectl }) {

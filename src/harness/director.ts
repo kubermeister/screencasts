@@ -10,7 +10,11 @@ export interface Director {
     window: Page;
     app: ElectronApplication;
     goto(path: string): Promise<void>;
-    beat(id: string): Promise<void>;
+    /**
+     * Starts the beat's text, runs `action` under it, then waits until the hold or the spoken line is
+     * over, whichever is later. Without an action, the beat is a plain wait.
+     */
+    beat(id: string, action?: () => Promise<void>): Promise<void>;
     anchor(name: string, locator: Locator): void;
     focus(locator: Locator): Promise<void>;
     glide(locator: Locator): Promise<void>;
@@ -54,6 +58,7 @@ export class Stage {
     private readonly cursor: (Omit<CursorSample, 'atMs'> & { atEpochMs: number })[] = [];
     private position = { x: WINDOW.width / 2, y: WINDOW.height / 2 };
     private stopSampling: (() => Promise<void>) | undefined;
+    private acting = false;
     private readonly usedAnchors: Set<string>;
 
     constructor(
@@ -85,7 +90,7 @@ export class Stage {
             window: this.window,
             app: this.app,
             goto: (path) => this.goto(path),
-            beat: (id) => this.beat(id),
+            beat: (id, action) => this.beat(id, action),
             anchor: (name, locator) => this.anchor(name, locator),
             focus: (locator) => this.focus(locator),
             glide: (locator) => this.glide(locator),
@@ -108,8 +113,9 @@ export class Stage {
         await sleep(400);
     }
 
-    private async beat(id: string): Promise<void> {
+    private async beat(id: string, action?: () => Promise<void>): Promise<void> {
         if (this.phase !== 'run') throw new SceneError(`beat('${id}') is only allowed in run()`);
+        if (this.acting) throw new SceneError(`beat('${id}') was called inside another beat's action`);
         const beat = this.script.beats.find((candidate) => candidate.id === id);
         if (!beat) throw new SceneError(`beat('${id}') is not a beat of ${this.script.id}/script.yml`);
         if (this.marked.some((mark) => mark.id === id)) throw new SceneError(`beat('${id}') is marked twice`);
@@ -118,10 +124,21 @@ export class Stage {
         this.stopSampling = undefined;
         const atEpochMs = Date.now();
         this.marked.push({ id, atEpochMs });
-        await this.sampleAnchors([...this.anchors.keys()]);
-        // A callout's label and a zoom both follow their element, so its box is sampled while the beat lasts.
+        // A callout's label and a zoom both follow their element, so its box is sampled while the beat
+        // lasts: from the mark, in the background, so an element the action is about to bring on
+        // screen does not hold the action up.
         const followed = beatAnchors(beat);
         if (followed.length > 0) this.stopSampling = this.follow(followed);
+
+        // The action is what the text is about, so it runs under the text, counted inside the wait.
+        if (action) {
+            this.acting = true;
+            try {
+                await action();
+            } finally {
+                this.acting = false;
+            }
+        }
 
         const voice = this.voiceMs.get(id);
         const wait = Math.max(holdMs(beat), voice === undefined ? 0 : voice + VOICE_TAIL_MS);
@@ -151,7 +168,6 @@ export class Stage {
     }
 
     private async sampleAnchors(names: string[]): Promise<void> {
-        const atEpochMs = Date.now();
         await Promise.all(
             names.map(async (name) => {
                 const box = await this.anchors
@@ -159,6 +175,9 @@ export class Stage {
                     ?.boundingBox({ timeout: 1_000 })
                     .catch(() => null);
                 if (!box) return;
+                // Stamped once the box is known: an element that appears during the wait for it must
+                // not be dated from before it existed, or its callout would show up early.
+                const atEpochMs = Date.now();
                 const samples = this.anchorSamples.get(name) ?? [];
                 samples.push({ atEpochMs, box: { x: box.x, y: box.y, w: box.width, h: box.height } });
                 this.anchorSamples.set(name, samples);
@@ -166,13 +185,16 @@ export class Stage {
         );
     }
 
-    /** Samples a beat's anchors while it lasts, so a callout or a zoom follows a box that moves. */
+    /**
+     * Samples a beat's anchors while it lasts, from its start, so a callout or a zoom follows a box
+     * that moves and starts the moment its element appears.
+     */
     private follow(names: string[]): () => Promise<void> {
         let running = true;
         const loop = (async () => {
             while (running) {
-                await sleep(ANCHOR_SAMPLE_MS);
-                if (running) await this.sampleAnchors(names);
+                await this.sampleAnchors(names);
+                if (running) await sleep(ANCHOR_SAMPLE_MS);
             }
         })();
         return async () => {

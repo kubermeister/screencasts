@@ -11,15 +11,18 @@ export default defineScene({
         const deployments = palette.getByRole('option', { name: 'Deployments', exact: true });
         anchor('deployments-option', deployments);
         await beat('intro');
-        await beat('open');
-        await press('Meta+k');
-        await palette.waitFor();
-        await type('deploy');
-        await deployments.waitFor();
-        await beat('search');
-        await click(deployments);
-        await focus(window.getByTestId('deployments-table'));
-        await beat('arrive');
+        await beat('open', async () => {
+            await press('Meta+k');
+            await palette.waitFor();
+        });
+        await beat('search', async () => {
+            await type('deploy');
+            await deployments.waitFor();
+        });
+        await beat('arrive', async () => {
+            await click(deployments);
+            await focus(window.getByTestId('deployments-table'));
+        });
         await beat('outro');
     },
     async cleanup() {},

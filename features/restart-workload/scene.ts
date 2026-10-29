@@ -17,16 +17,19 @@ export default defineScene({
         anchor('dialog', dialog);
         anchor('progress', page.getByTestId('rollout-progress'));
         await beat('intro');
-        await beat('restart');
-        await click(page.getByRole('button', { name: 'Restart' }));
-        await dialog.waitFor({ timeout: 30_000 });
+        await beat('restart', async () => {
+            await click(page.getByRole('button', { name: 'Restart' }));
+            await dialog.waitFor({ timeout: 30_000 });
+        });
+        // The callout rests on the dialog, so it is only confirmed under the next beat.
         await beat('confirm');
-        await click(dialog.getByRole('button', { name: 'Restart' }));
-        await window
-            .getByText(/restarting/)
-            .first()
-            .waitFor({ timeout: 30_000 });
-        await beat('progress');
+        await beat('progress', async () => {
+            await click(dialog.getByRole('button', { name: 'Restart' }));
+            await window
+                .getByText(/restarting/)
+                .first()
+                .waitFor({ timeout: 30_000 });
+        });
         await beat('outro');
     },
     // Lets the rollout finish, so the next scene finds the deployment settled.

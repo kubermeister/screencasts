@@ -21,13 +21,12 @@ export default defineScene({
         anchor('cordoned', cordoned);
         await beat('intro');
         await beat('usage');
-        await glide(summary.getByTestId('recent-events'));
-        await beat('events');
-        await glide(alerts);
-        await beat('alerts');
-        kubectl(['cordon', NODE]);
-        await cordoned.waitFor({ timeout: 60_000 });
-        await beat('live');
+        await beat('events', () => glide(summary.getByTestId('recent-events')));
+        await beat('alerts', () => glide(alerts));
+        await beat('live', async () => {
+            kubectl(['cordon', NODE]);
+            await cordoned.waitFor({ timeout: 60_000 });
+        });
         await beat('outro');
     },
     async cleanup({ kubectl }) {

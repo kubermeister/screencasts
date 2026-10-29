@@ -20,9 +20,10 @@ export default defineScene({
         anchor('rollback-dialog', window.getByRole('alertdialog'));
         await beat('intro');
         await beat('revisions');
-        await beat('rollback');
-        await click(revisions.locator('[data-revision="1"]').getByRole('button', { name: 'Roll back' }));
-        await window.getByRole('alertdialog').waitFor({ timeout: 30_000 });
+        await beat('rollback', async () => {
+            await click(revisions.locator('[data-revision="1"]').getByRole('button', { name: 'Roll back' }));
+            await window.getByRole('alertdialog').waitFor({ timeout: 30_000 });
+        });
         await beat('confirm');
         await beat('outro');
     },

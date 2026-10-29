@@ -17,15 +17,17 @@ export default defineScene({
         anchor('status', status);
         anchor('forwards', window.getByTestId('forward-list'));
         await beat('intro');
-        await beat('start');
-        await click(window.getByRole('textbox', { name: 'Local port' }));
-        await type(LOCAL_PORT);
-        await click(window.getByRole('button', { name: 'Start' }));
-        await status.getByText('Listening').waitFor({ timeout: 30_000 });
+        await beat('start', async () => {
+            await click(window.getByRole('textbox', { name: 'Local port' }));
+            await type(LOCAL_PORT);
+            await click(window.getByRole('button', { name: 'Start' }));
+            await status.getByText('Listening').waitFor({ timeout: 30_000 });
+        });
         await beat('listening');
-        await click(window.getByRole('button', { name: 'Port forwards' }));
-        await window.getByTestId('forward-list').waitFor({ timeout: 30_000 });
-        await beat('topbar');
+        await beat('topbar', async () => {
+            await click(window.getByRole('button', { name: 'Port forwards' }));
+            await window.getByTestId('forward-list').waitFor({ timeout: 30_000 });
+        });
         await beat('outro');
     },
     // The listener would stay open until the app quits; the popover is still open here.

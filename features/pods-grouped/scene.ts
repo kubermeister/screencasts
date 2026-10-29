@@ -13,10 +13,11 @@ export default defineScene({
         const group = table.locator('[data-group^="ReplicaSet/checkout-"]');
         anchor('group', group);
         await beat('intro');
-        await beat('picker');
-        await click(window.getByRole('combobox', { name: 'Group pods' }));
-        await click(window.getByRole('option', { name: 'By owner' }));
-        await group.waitFor({ timeout: 30_000 });
+        await beat('picker', async () => {
+            await click(window.getByRole('combobox', { name: 'Group pods' }));
+            await click(window.getByRole('option', { name: 'By owner' }));
+            await group.waitFor({ timeout: 30_000 });
+        });
         await beat('grouped');
         await beat('outro');
     },

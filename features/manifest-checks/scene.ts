@@ -16,22 +16,25 @@ export default defineScene({
         anchor('warning', page.locator('.cm-lintRange-warning').first());
         anchor('completion', window.locator('.cm-tooltip-autocomplete'));
         await beat('intro');
-        await click(page.locator('.cm-line', { hasText: /^\s{2}replicas: \d+$/ }).first());
-        await press('End');
-        await press('Backspace');
-        await type('two');
-        // The first check of a kind fetches its schema from the cluster.
-        await page.locator('.cm-lintRange-error').first().waitFor({ timeout: 60_000 });
-        await beat('error');
-        // Enter keeps the indentation of the line above.
-        await press('Enter');
-        await type('replica: 2');
-        await page.locator('.cm-lintRange-warning').first().waitFor({ timeout: 30_000 });
-        await beat('warning');
-        await press('Enter');
-        await type('strat');
-        await window.locator('.cm-tooltip-autocomplete').waitFor({ timeout: 30_000 });
-        await beat('completion');
+        await beat('error', async () => {
+            await click(page.locator('.cm-line', { hasText: /^\s{2}replicas: \d+$/ }).first());
+            await press('End');
+            await press('Backspace');
+            await type('two');
+            // The first check of a kind fetches its schema from the cluster.
+            await page.locator('.cm-lintRange-error').first().waitFor({ timeout: 60_000 });
+        });
+        await beat('warning', async () => {
+            // Enter keeps the indentation of the line above.
+            await press('Enter');
+            await type('replica: 2');
+            await page.locator('.cm-lintRange-warning').first().waitFor({ timeout: 30_000 });
+        });
+        await beat('completion', async () => {
+            await press('Enter');
+            await type('strat');
+            await window.locator('.cm-tooltip-autocomplete').waitFor({ timeout: 30_000 });
+        });
         await beat('outro');
     },
     async cleanup({ window }) {

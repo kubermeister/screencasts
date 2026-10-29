@@ -23,12 +23,14 @@ export default defineScene({
         anchor('toast', toast);
         await beat('intro');
         await beat('masked');
-        await click(keys.getByRole('button', { name: 'Reveal DATABASE_URL' }));
-        await value.getByText('postgres://').waitFor({ timeout: 30_000 });
-        await beat('reveal');
-        await click(keys.getByRole('button', { name: 'Copy GATEWAY_API_KEY' }));
-        await toast.waitFor({ timeout: 30_000 });
-        await beat('copy');
+        await beat('reveal', async () => {
+            await click(keys.getByRole('button', { name: 'Reveal DATABASE_URL' }));
+            await value.getByText('postgres://').waitFor({ timeout: 30_000 });
+        });
+        await beat('copy', async () => {
+            await click(keys.getByRole('button', { name: 'Copy GATEWAY_API_KEY' }));
+            await toast.waitFor({ timeout: 30_000 });
+        });
         await beat('outro');
     },
     async cleanup() {},

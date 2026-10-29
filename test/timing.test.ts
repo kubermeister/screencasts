@@ -68,17 +68,18 @@ describe('compositionMs', () => {
 describe('textSpans', () => {
     const spans = textSpans(timeline, script, 11_000);
 
-    it('keeps a text on screen until the next beat with text, across a pure-action beat', () => {
+    it('ends a text at the next beat, so a pure-action beat clears the screen', () => {
         expect(spans.map((span) => [span.beatId, span.startMs, span.endMs])).toEqual([
-            ['intro', 500, 4000],
+            ['intro', 500, 3000],
             ['look', 4000, 8500],
             ['outro', 8500, 11_000],
         ]);
     });
 
-    it('finds the span at a moment, and none before the first beat', () => {
+    it('finds the span at a moment, and none before the first beat or during a pure-action beat', () => {
         expect(spanAt(spans, 100)).toBeUndefined();
-        expect(spanAt(spans, 3500)?.beatId).toBe('intro');
+        expect(spanAt(spans, 2500)?.beatId).toBe('intro');
+        expect(spanAt(spans, 3500)).toBeUndefined();
         expect(spanAt(spans, 10_999)?.beatId).toBe('outro');
     });
 });
@@ -100,6 +101,12 @@ describe('boxAt', () => {
         { atMs: 0, box: a },
         { atMs: 1000, box: b },
     ];
+
+    it('has no box before the first sample: a callout waits for its element', () => {
+        expect(boxAt(samples, -1, 150)).toBeUndefined();
+        expect(boxAt([{ atMs: 300, box: a }], 299, 150)).toBeUndefined();
+        expect(boxAt([{ atMs: 300, box: a }], 300, 150)).toEqual(a);
+    });
 
     it('holds the first box until the next sample, then glides to it', () => {
         expect(boxAt(samples, 500, 150)).toEqual(a);

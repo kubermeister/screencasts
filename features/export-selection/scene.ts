@@ -23,17 +23,21 @@ export default defineScene({
         anchor('selection-bar', window.getByTestId('selection-bar'));
         anchor('menu', window.getByRole('menu'));
         await beat('intro');
-        for (const row of ROWS) {
-            await click(table.locator(`[data-deployment="${row}"]`).getByRole('checkbox', { name: 'Select row' }));
-        }
-        await window.getByTestId('selection-bar').waitFor({ timeout: 30_000 });
-        await beat('select');
-        await click(window.getByTestId('selection-bar').getByRole('button', { name: /^Export/ }));
-        await window.getByRole('menu').waitFor({ timeout: 30_000 });
-        await beat('menu');
-        await click(window.getByRole('menuitem', { name: 'Cleaned for another cluster' }));
-        await window.locator('[data-sonner-toast]').filter({ hasText: 'saved' }).waitFor({ timeout: 30_000 });
-        await beat('saved');
+        await beat('select', async () => {
+            for (const row of ROWS) {
+                await click(table.locator(`[data-deployment="${row}"]`).getByRole('checkbox', { name: 'Select row' }));
+            }
+            await window.getByTestId('selection-bar').waitFor({ timeout: 30_000 });
+        });
+        // The menu's callout follows the menu, so the menu is opened under its own beat.
+        await beat('menu', async () => {
+            await click(window.getByTestId('selection-bar').getByRole('button', { name: /^Export/ }));
+            await window.getByRole('menu').waitFor({ timeout: 30_000 });
+        });
+        await beat('saved', async () => {
+            await click(window.getByRole('menuitem', { name: 'Cleaned for another cluster' }));
+            await window.locator('[data-sonner-toast]').filter({ hasText: 'saved' }).waitFor({ timeout: 30_000 });
+        });
         await beat('outro');
     },
     async cleanup({ window }) {

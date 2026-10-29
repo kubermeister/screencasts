@@ -28,10 +28,8 @@ export default defineScene({
         anchor('events', events);
         await beat('intro');
         await beat('containers');
-        await glide(events);
-        await beat('events');
-        await glide(describe.getByRole('button', { name: 'Copy' }));
-        await beat('copy');
+        await beat('events', () => glide(events));
+        await beat('copy', () => glide(describe.getByRole('button', { name: 'Copy' })));
         await beat('outro');
     },
     async cleanup() {},
