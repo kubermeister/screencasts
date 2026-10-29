@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: related-tab
+title: Related tab
+since: 0.3.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice:
+  provider: kokoro
+  voice: af_heart
+beats:
+  - id: intro
+    text: { kind: title, value: 'What a pod is tied to, and why' }
+    say: 'Kubermeister shows what a pod is tied to, and says why for every link.'
+  - id: traffic
+    text:
+      kind: callout
+      value: 'Traffic: the Service that selects these pods'
+      anchor: traffic
+      side: auto
+    say: 'The related tab groups them. Traffic is the service that selects these pods.'
+    hold: 2.2s
+  - id: configuration
+    text:
+      kind: callout
+      value: 'Configuration: mounted, envFrom, or a single env var'
+      anchor: configuration
+      side: auto
+    say: 'Configuration lists each config map and secret, and how it is used: mounted as a volume, pulled in with env from, or read into a single variable. Nothing is guessed from a name that merely looks alike.'
+    hold: 2.6s
+  - id: follow
+    text: { kind: caption, value: 'Every entry is a link to the object itself' }
+    say: 'Every entry is a link to the object itself.'
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

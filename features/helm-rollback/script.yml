@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: helm-rollback
+title: Helm rollback
+since: 0.3.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice:
+  provider: kokoro
+  voice: af_heart
+beats:
+  - id: intro
+    text: { kind: title, value: 'Helm history the CLI can still read' }
+    say: 'Kubermeister reads a Helm release the way Helm wrote it, and rolls it back or uninstalls it in a form the Helm command line still understands.'
+  - id: revisions
+    text:
+      kind: callout
+      value: 'Every revision, its status and what changed it'
+      anchor: release-revisions
+      side: auto
+    say: 'The revisions tab lists every revision with its status, chart version and description.'
+    hold: 2.2s
+  - id: rollback
+    text: { kind: caption, value: 'Roll back to an earlier revision' }
+    say: 'Press roll back on an earlier revision.'
+  - id: confirm
+    text:
+      kind: callout
+      value: 'Helm numbers forward: a rollback is a new revision'
+      anchor: rollback-dialog
+      side: auto
+    say: 'Helm only numbers forward, so a rollback becomes a new revision rather than rewinding, and the history stays intact.'
+    hold: 2.6s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

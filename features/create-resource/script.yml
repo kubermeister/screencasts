@@ -1,0 +1,40 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: create-resource
+title: Create resource
+since: 0.5.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice:
+  provider: kokoro
+  voice: af_heart
+beats:
+  - id: intro
+    text: { kind: title, value: 'Create from a template or a file' }
+    say: 'Kubermeister creates any object from a template, a pasted manifest, or a file dropped on the window.'
+  - id: template
+    text:
+      kind: callout
+      value: 'Insert template fills in a complete, valid starting point'
+      anchor: editor
+      side: auto
+    say: 'Open create resource and insert a template. It is a complete, valid starting point for the kind you picked.'
+    hold: 2.2s
+  - id: dry-run
+    text:
+      kind: callout
+      value: 'Dry run asks the API server before anything is created'
+      anchor: toast
+      side: auto
+    say: 'Dry run sends it to the API server for checking, without creating anything.'
+    hold: 2.2s
+  - id: drop
+    text:
+      kind: callout
+      value: 'Drop a file on any screen to open it here'
+      anchor: drop-target
+      side: auto
+    say: 'And a manifest file dropped anywhere on the window opens right here, ready to review. Nothing is applied until you press create.'
+    hold: 2.4s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

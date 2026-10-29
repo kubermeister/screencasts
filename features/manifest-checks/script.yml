@@ -1,0 +1,40 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: manifest-checks
+title: Manifest checks
+since: 0.6.2
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice:
+  provider: kokoro
+  voice: af_heart
+beats:
+  - id: intro
+    text: { kind: title, value: 'Mistakes marked as you type' }
+    say: 'Kubermeister checks a manifest as you type, against the schema your cluster publishes for its kind.'
+  - id: error
+    text:
+      kind: callout
+      value: 'A wrong type is marked where it is, not after Save'
+      anchor: error
+      side: auto
+    say: 'Put a word where a number belongs, and the mistake is marked right where it is, not reported by the API server after you save.'
+    hold: 2.4s
+  - id: warning
+    text:
+      kind: callout
+      value: 'A field the kind does not have, with the one you meant'
+      anchor: warning
+      side: auto
+    say: 'A field the kind does not have is flagged too, with the one you probably meant.'
+    hold: 2.4s
+  - id: completion
+    text:
+      kind: callout
+      value: 'Completion from the same schema, required fields first'
+      anchor: completion
+      side: auto
+    say: 'And at the start of a line, the editor offers the fields you have not written yet, required ones first.'
+    hold: 2.4s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

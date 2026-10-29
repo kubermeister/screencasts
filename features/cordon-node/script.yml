@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: cordon-node
+title: Cordon node
+since: 0.3.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice:
+  provider: kokoro
+  voice: af_heart
+beats:
+  - id: intro
+    text: { kind: title, value: 'Cordon, drain and uncordon a node' }
+    say: 'Kubermeister cordons, drains and uncordons a node from its page, with a plan before any drain.'
+  - id: cordon
+    text:
+      kind: callout
+      value: 'Cordoned: running pods stay, nothing new lands here'
+      anchor: status
+      side: auto
+    say: 'Press cordon, and the scheduler puts nothing new on the node. The pods already running stay where they are.'
+    hold: 2.4s
+  - id: drain
+    text:
+      kind: callout
+      value: 'Choose what a drain may touch before it starts'
+      anchor: switch
+      side: auto
+    say: 'Drain shows its plan first, and lets you choose whether pods with no controller, or with local storage, may go too.'
+    hold: 2.6s
+  - id: uncordon
+    text: { kind: caption, value: 'Uncordon puts the node back in the schedule' }
+    say: 'Uncordon puts the node back in the schedule.'
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }
