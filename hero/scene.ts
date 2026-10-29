@@ -33,7 +33,7 @@ function newestPod(kubectl: (args: string[]) => string): string {
  * cursor, the cluster and the timing run on without a cut. Every beat carries the action its caption
  * names, and the next beat's action backs out of whatever the last one opened, so nothing is left in
  * the way. Nothing here writes to the cluster: the scale popover is typed into and dismissed, the
- * manifest edit is discarded, the drain plan is only shown, the forward is stopped in cleanup, and
+ * manifest edit is discarded, the drain plan is only shown, the forward is stopped on camera, and
  * the rollout restart in setup only ever runs once per cluster. overview/scene.ts is this scene with
  * narration; keep the two in step.
  */
@@ -160,7 +160,11 @@ export default defineScene({
             await window.getByTestId('port-forward-status').getByText('Listening').waitFor({ timeout: 30_000 });
         });
 
+        // The forward is stopped from the top bar, as a user would, so none is live when the app closes.
         await beat('secret', async () => {
+            await click(window.getByRole('button', { name: 'Port forwards', exact: true }));
+            await click(window.getByTestId('forward-list').getByRole('button', { name: /^Stop forward/ }));
+            await press('Escape');
             await goto(`/workloads/secrets/${NAMESPACE}/${SECRET}/data`);
             const keys = window.getByTestId('secret-keys');
             await click(keys.getByRole('button', { name: 'Reveal DATABASE_URL' }));
@@ -183,10 +187,5 @@ export default defineScene({
 
         await beat('outro');
     },
-    // The forward would listen until the app quits; it is stopped from the top bar, as a user would.
-    async cleanup({ window }) {
-        await window.getByRole('button', { name: 'Port forwards' }).click();
-        await window.getByRole('button', { name: /^Stop forward/ }).click();
-        await window.keyboard.press('Escape');
-    },
+    async cleanup() {},
 });
