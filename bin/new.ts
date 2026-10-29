@@ -35,17 +35,23 @@ const SCENE_TS = `import { defineScene } from '../../../src/harness/scene';
 
 export default defineScene({
     // Before the video starts: not filmed.
-    async setup({ goto }) {
-        // TODO: open the screen the video starts on and wait for it, e.g.
+    async setup({ goto, window, focus }) {
+        // TODO: open the screen the video starts on, wait for it, and focus what matters, e.g.
         // await goto('/settings/appearance');
+        // await focus(window.getByRole('combobox', { name: 'Text size', exact: true }));
         await goto('/overview/summary');
+        await focus(window.getByTestId('cluster-summary'));
     },
-    // The video: mark every beat of script.yml, in order.
-    async run({ beat }) {
+    // The video: mark every beat of script.yml, in order. A beat's action is what its text is
+    // about, so it runs under the text; a beat with no action is a plain wait.
+    async run({ window, beat, click }) {
         await beat('intro');
-        await beat('show');
-        // TODO: drive the feature with click(), type() and press(), selectors as in the app's
-        // tests/demo/shots/screenshots.test.ts.
+        await beat('show', async () => {
+            // TODO: drive the feature with click(), type() and press(), selectors as in the app's
+            // tests/demo/shots/screenshots.test.ts, e.g.
+            // await click(window.getByRole('tab', { name: 'Logs' }));
+            await click(window.getByTestId('cluster-summary'));
+        });
         await beat('outro');
     },
     // After the video ends: not filmed. Back out of anything that would block closing.
