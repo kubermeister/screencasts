@@ -36,15 +36,11 @@ function newestMtime(dir: string): number {
     return newest;
 }
 
-export function appVersion(): string {
-    return readJson<AppPackage>(join(APP_DIR, 'package.json')).version ?? '0.0.0';
-}
-
 /**
- * Checks 1–3 of the pre-flight: the checkout is the app, it is built from its current sources, and it
- * is recent enough to have the feature. Each failure names the fix.
+ * Checks 1 and 2 of the pre-flight: the checkout is the app, and it is built from its current
+ * sources. Each failure names the fix.
  */
-export function checkApp(feature?: { id: string; since: string }): void {
+export function checkApp(): void {
     const pkgPath = join(APP_DIR, 'package.json');
     if (!existsSync(pkgPath) || readJson<AppPackage>(pkgPath).name !== 'kubermeister') {
         throw new PreflightError(
@@ -59,16 +55,6 @@ export function checkApp(feature?: { id: string; since: string }): void {
         throw new PreflightError(
             `The app build is missing or older than its sources. Run \`npm run build\` in ${APP_DIR}`,
         );
-    }
-
-    if (feature) {
-        const version = appVersion();
-        if (semver.lt(version, feature.since)) {
-            throw new PreflightError(
-                `This checkout of the app (v${version}) predates ${feature.id} (since v${feature.since}). ` +
-                    'Check out a later version',
-            );
-        }
     }
 }
 

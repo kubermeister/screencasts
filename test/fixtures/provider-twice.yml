@@ -1,7 +1,6 @@
 # expect: voices: lists the same provider twice
 id: demo
 title: Demo
-since: 0.10.0
 voices: [kokoro, kokoro]
 beats:
   - id: intro

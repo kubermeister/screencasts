@@ -1,7 +1,6 @@
 # expect: unknown key 'colour'
 id: demo
 title: Demo
-since: 0.10.0
 colour: red
 beats:
   - id: intro

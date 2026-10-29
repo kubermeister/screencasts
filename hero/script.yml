@@ -3,7 +3,6 @@
 # It opens and closes on the cluster summary.
 id: hero
 title: Kubermeister
-since: 0.10.0
 formats: [video]
 theme: dark
 # The maintainer's ElevenLabs voice, from .env; the one paid voice in the repository besides text-size.

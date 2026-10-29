@@ -1,7 +1,6 @@
 # yaml-language-server: $schema=../schema/script.schema.json
 id: overview
 title: Kubermeister
-since: 0.10.0
 formats: [video]
 theme: dark
 beats:

@@ -3,7 +3,7 @@ import '../src/env';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { ROOT } from '../src/config';
-import { appVersion, checkApp } from '../src/harness/app';
+import { checkApp } from '../src/harness/app';
 import { GROUPS, groupOf, isGroup } from '../src/script';
 
 const USAGE = `Usage: npm run new -- <group>/<id>   (group: ${GROUPS.join(' | ')}; id: lowercase words joined by hyphens, e.g. navigation/text-size)`;
@@ -13,11 +13,10 @@ function title(id: string): string {
     return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
-function scriptYaml(id: string, since: string): string {
+function scriptYaml(id: string): string {
     return `# yaml-language-server: $schema=../../../schema/script.schema.json
 id: ${id}
 title: ${title(id)}
-since: ${since}
 formats: [video, reel]
 theme: dark
 # Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
@@ -67,11 +66,10 @@ function main(target: string | undefined): number {
     }
     const dir = join(ROOT, 'features', group, id);
     checkApp();
-    const since = appVersion();
     mkdirSync(dir, { recursive: true });
-    writeFileSync(join(dir, 'script.yml'), scriptYaml(id, since));
+    writeFileSync(join(dir, 'script.yml'), scriptYaml(id));
     writeFileSync(join(dir, 'scene.ts'), SCENE_TS);
-    console.log(`Created ${relative(ROOT, dir)}/script.yml and scene.ts (since ${since}).`);
+    console.log(`Created ${relative(ROOT, dir)}/script.yml and scene.ts.`);
     console.log(`Write the beats and the scene, then: npm run video -- ${id} --frames`);
     return 0;
 }

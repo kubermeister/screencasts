@@ -1,7 +1,6 @@
 # yaml-language-server: $schema=../../../schema/script.schema.json
 id: pods-grouped
 title: Pods grouped
-since: 0.3.0
 formats: [video, reel]
 theme: dark
 # Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.

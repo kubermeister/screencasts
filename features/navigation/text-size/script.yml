@@ -1,7 +1,6 @@
 # yaml-language-server: $schema=../../../schema/script.schema.json
 id: text-size
 title: Text size
-since: 0.10.0
 formats: [video, reel]
 theme: dark
 # The first provider is the default; `npm run video -- text-size --voice all` renders both. Each
