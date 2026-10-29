@@ -2,8 +2,8 @@
 id: demo
 title: Demo
 since: 0.10.0
-voice: { provider: kokoro, voice: af_heart }
-voices:
-  - { provider: kokoro, voice: af_bella }
+voice: kokoro
+voices: [openai]
 beats:
   - id: intro
+    text: { kind: title, value: 'Hello' }

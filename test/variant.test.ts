@@ -4,9 +4,8 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { UsageError } from '../src/cli';
 import { removeVariant } from '../src/pipeline';
-import type { VoiceSettings } from '../src/script';
 import { slugify, variantFiles, variantOf, voiceLabel, voiceName, voicesOf } from '../src/variant';
-import type { Fetch } from '../src/voice/provider';
+import type { Fetch, VoiceSettings } from '../src/voice/provider';
 
 const eleven: VoiceSettings = { provider: 'elevenlabs', voice: 'Dhyh3AlgVPGDnVMGBox6', model: 'eleven_v4' };
 
@@ -62,11 +61,12 @@ describe('a variant', () => {
         expect(files.state).toMatch(/\/dark--elevenlabs-v4-female-option-1\/state\.json$/);
     });
 
-    it('comes from the first of several voices by default, or the one voice, or none', () => {
+    it('comes from the first of several providers by default, or the one provider, or none', () => {
+        const env = { ELEVENLABS_VOICE: 'Dhyh3AlgVPGDnVMGBox6', ELEVENLABS_MODEL: 'eleven_v4' };
         const kokoro: VoiceSettings = { provider: 'kokoro', voice: 'af_heart' };
-        expect(voicesOf({ voices: [eleven, kokoro] })).toEqual([eleven, kokoro]);
-        expect(voicesOf({ voice: kokoro })).toEqual([kokoro]);
-        expect(voicesOf({})).toEqual([undefined]);
+        expect(voicesOf({ voices: ['elevenlabs', 'kokoro'] }, env)).toEqual([eleven, kokoro]);
+        expect(voicesOf({ voice: 'kokoro' }, env)).toEqual([kokoro]);
+        expect(voicesOf({}, env)).toEqual([undefined]);
     });
 });
 

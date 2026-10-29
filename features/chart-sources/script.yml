@@ -5,9 +5,7 @@ since: 0.5.0
 formats: [video, reel]
 theme: dark
 # Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
-voice:
-  provider: kokoro
-  voice: af_heart
+voice: kokoro
 beats:
   - id: intro
     text: { kind: title, value: 'Charts from any repository or registry' }

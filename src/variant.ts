@@ -2,8 +2,9 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { OUT_DIR, type Theme } from './config';
-import type { Format, Script, VoiceSettings } from './script';
-import type { Fetch } from './voice/provider';
+import type { Format, Script } from './script';
+import type { Fetch, VoiceSettings } from './voice/provider';
+import { voiceSettings, type Env } from './voice/settings';
 
 /**
  * One rendering of a video: its theme and one of its voices. Each variant has its own folder, so
@@ -32,7 +33,7 @@ export function slugify(text: string): string {
 }
 
 /** The model as people say it: `eleven_v4` → `v4`, `eleven_multilingual_v2` → `multilingual-v2`. */
-function modelLabel(model: string | null | undefined): string | undefined {
+function modelLabel(model: string | undefined): string | undefined {
     return model ? slugify(model.replace(/^eleven_/, '')) : undefined;
 }
 
@@ -71,9 +72,13 @@ export const variantFiles = (variant: Variant) => ({
     state: join(variant.dir, 'state.json'),
 });
 
-/** The voices a script declares, the default first; one `undefined` for a silent script. */
-export function voicesOf(script: Pick<Script, 'voice' | 'voices'>): (VoiceSettings | undefined)[] {
-    return script.voices ?? [script.voice];
+/**
+ * The voices a script declares, the default first, each resolved from `.env`; one `undefined` for a
+ * silent script. A provider the environment does not configure is an error naming the variable.
+ */
+export function voicesOf(script: Pick<Script, 'voice' | 'voices'>, env?: Env): (VoiceSettings | undefined)[] {
+    const providers = script.voices ?? [script.voice];
+    return providers.map((provider) => (provider === undefined ? undefined : voiceSettings(provider, env)));
 }
 
 const NAMES_PATH = join(OUT_DIR, 'voice', 'names.json');
@@ -122,19 +127,11 @@ export async function voiceName(
     }
 }
 
-/** Every declared variant of a script in a theme, with readable labels; duplicates are an error. */
+/** Every declared variant of a script in a theme, with readable labels. */
 export async function declaredVariants(script: Script, theme: Theme, fetchImpl: Fetch = fetch): Promise<Variant[]> {
     const variants = [];
     for (const voice of voicesOf(script))
         variants.push(variantOf(script.id, theme, voice, await voiceName(voice, fetchImpl)));
-    const seen = new Map<string, number>();
-    variants.forEach((variant, i) => {
-        const first = seen.get(variant.name);
-        if (first !== undefined) {
-            throw new Error(`${script.id}: voices[${first}] and voices[${i}] are the same variant (${variant.label})`);
-        }
-        seen.set(variant.name, i);
-    });
     return variants;
 }
 

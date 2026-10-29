@@ -111,7 +111,8 @@ screencasts/
       recorder.ts            # CDP screencast → frames → footage.mp4 + timeline.json
       scene.ts               # defineScene() and the scene types
     voice/
-      provider.ts            # VoiceProvider interface
+      provider.ts            # VoiceProvider interface and VoiceSettings
+      settings.ts            # each provider's voice, model and speed, from .env
       kokoro.ts              # local, default
       openai.ts              # gpt-4o-mini-tts
       elevenlabs.ts          # REST API
@@ -158,12 +159,7 @@ title: Text size # human title, used in the end card and logs
 since: 0.10.0 # app version that shipped it (semver, no leading v)
 formats: [video, reel] # any non-empty subset; default both
 theme: dark # dark | light; default dark
-voice: # optional; absent = no voiceover
-  provider: kokoro # kokoro | openai | elevenlabs
-  voice: af_heart # provider-specific voice id
-  model: null # provider model; required for openai (gpt-4o-mini-tts) and elevenlabs
-  instructions: null # openai only: delivery style, e.g. "calm, confident developer demo"
-  speed: 1.0 # 0.8–1.2
+voice: kokoro # optional; kokoro | openai | elevenlabs; absent = no voiceover
 beats:
   - id: intro
     text: { kind: title, value: 'Make Kubermeister easier to read' }
@@ -193,9 +189,15 @@ Rules the schema and `src/script.ts` enforce:
 - At most one `title` (must be the first beat if present) and one `end-card` (must be the last).
 - `hold`: duration `^\d+(\.\d+)?(ms|s)$`, default `1.2s` for beats with text, `0` without.
 - `say`: optional, ≤ 300 characters. Used only when `voice` is set.
-- `voices`: optional, instead of `voice` (never both): 1–8 voices to render side by side, the first
-  being the default (added after Phase 11 at the maintainer's request). `--voice all` renders every
-  one, `--voice <label>` one of them; each is its own recording, since line lengths set the timing.
+- `voice` names only the provider. How it sounds (voice id, model, OpenAI instructions, speed
+  0.8–1.2) comes from `.env` (`KOKORO_VOICE`, `OPENAI_VOICE`, `ELEVENLABS_VOICE`, and their `_MODEL`,
+  `_INSTRUCTIONS`, `_SPEED` variables; `src/voice/settings.ts`), so a change of voice applies to every
+  video at once and a paid voice id never enters the repository (changed after Phase 11 at the
+  maintainer's request). Kokoro needs nothing set; a paid provider's voice has no default.
+- `voices`: optional, instead of `voice` (never both): providers to render side by side, each once,
+  the first being the default (added after Phase 11 at the maintainer's request). `--voice all`
+  renders every one, `--voice <label>` one of them; each is its own recording, since line lengths
+  set the timing.
 - `zoom`: optional, the name of an anchor the scene registers (added after Phase 11 at the
   maintainer's request). For that beat the 16:9 video's camera eases in on the element (a crop of
   the window's shape fitting it with 80 px of padding, at most 2.5×) and back out after; the reel
@@ -297,7 +299,7 @@ Pre-flight checks before recording (each failure prints the exact fix):
 | ---------- | --------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
 | `app`      | the contents of the app's `out/` directory (sorted paths + bytes)                                         | record, render                                     |
 | `scene`    | `scene.ts` + the beat ids and `hold`s + the voice durations + `theme` + harness source (`src/harness/**`) | record, render                                     |
-| `voice[i]` | provider + model + voice + instructions + speed + the beat's `say`                                        | that line, then record (durations changed), render |
+| `voice[i]` | provider + model + voice + instructions + speed (from `.env`) + the beat's `say`                          | that line, then record (durations changed), render |
 | `render`   | full `script.yml` + `brand/**` + `src/render/**` + `src/remotion/**` + the footage key                    | render                                             |
 
 Voice is computed before the record decision, because durations feed the recording. If nothing

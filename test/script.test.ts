@@ -69,7 +69,7 @@ describe('the TypeScript types', () => {
         since: '0.10.0',
         formats: ['video', 'reel'],
         theme: 'light',
-        voice: { provider: 'openai', voice: 'alloy', model: 'gpt-4o-mini-tts', instructions: 'calm', speed: 1.1 },
+        voice: 'openai',
         beats: [
             { id: 'intro', text: { kind: 'title', value: 'Hello' }, say: 'Hello there.' },
             { id: 'look', text: { kind: 'callout', value: 'Here', anchor: 'thing', side: 'left' }, hold: '800ms' },

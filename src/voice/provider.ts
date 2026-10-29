@@ -1,6 +1,16 @@
-import type { VoiceSettings } from '../script';
+import type { VoiceProviderId } from '../script';
 
-export type { VoiceSettings } from '../script';
+/** One provider's resolved settings: what a line is synthesized with, from `.env` (see settings.ts). */
+export interface VoiceSettings {
+    provider: VoiceProviderId;
+    voice: string;
+    /** Absent for Kokoro, which has one model. */
+    model?: string;
+    /** openai only: delivery style. */
+    instructions?: string;
+    /** 0.8–1.2; absent means 1. */
+    speed?: number;
+}
 
 export interface Speech {
     /** Canonical WAV: mono, 16-bit PCM, 48 kHz. */

@@ -5,9 +5,12 @@ import { allVideoIds } from '../src/script';
 
 beforeEach(() => {
     vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    // text-size names elevenlabs, whose voice lives in the maintainer's .env.
+    vi.stubEnv('ELEVENLABS_VOICE', 'Dhyh3AlgVPGDnVMGBox6');
 });
 
 afterEach(() => {
+    vi.unstubAllEnvs();
     vi.restoreAllMocks();
 });
 
@@ -29,7 +32,7 @@ describe('npm run new', () => {
     it('scaffolds a Kokoro voice, never a paid one', async () => {
         const { readFileSync } = await import('node:fs');
         const scaffold = readFileSync('bin/new.ts', 'utf8');
-        expect(scaffold).toContain('provider: kokoro');
-        expect(scaffold).not.toMatch(/provider: (elevenlabs|openai)/);
+        expect(scaffold).toContain('voice: kokoro');
+        expect(scaffold).not.toMatch(/elevenlabs|openai/);
     });
 });

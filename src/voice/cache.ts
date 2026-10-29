@@ -8,7 +8,7 @@ export const VOICE_DIR = join(OUT_DIR, 'voice');
 
 /**
  * Everything that changes how a line sounds, and nothing else, so the same line in two videos or two
- * runs is synthesized once. Absent and null mean the same; speed defaults to 1.
+ * runs is synthesized once. Speed defaults to 1.
  */
 export function voiceKey(settings: VoiceSettings, text: string): string {
     const parts = [
