@@ -10,6 +10,8 @@ export interface VoiceSettings {
     instructions?: string;
     /** 0.8–1.2; absent means 1. */
     speed?: number;
+    /** elevenlabs only: a pronunciation dictionary as `<id>/<version id>`, applied to every line. */
+    dictionary?: string;
 }
 
 export interface Speech {

@@ -102,6 +102,22 @@ describe('ElevenLabsProvider', () => {
         expect(speech.durationMs).toBe(1234);
     });
 
+    it('names the pronunciation dictionary to apply, when there is one', async () => {
+        vi.stubEnv('ELEVENLABS_API_KEY', 'xi-test');
+        const { fetch, calls } = fakeFetch();
+        await new ElevenLabsProvider({ fetch, finish }).synthesize('Kubermeister.', {
+            provider: 'elevenlabs',
+            voice: 'v',
+            model: 'eleven_v4',
+            dictionary: 'dict123/ver456',
+        });
+        expect(body(calls[0]!.init)).toEqual({
+            text: 'Kubermeister.',
+            model_id: 'eleven_v4',
+            pronunciation_dictionary_locators: [{ pronunciation_dictionary_id: 'dict123', version_id: 'ver456' }],
+        });
+    });
+
     it('reports the status and message of a failed request', async () => {
         vi.stubEnv('ELEVENLABS_API_KEY', 'xi-test');
         const { fetch } = fakeFetch(429);

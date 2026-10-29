@@ -17,6 +17,7 @@ export function voiceKey(settings: VoiceSettings, text: string): string {
         settings.voice,
         settings.instructions ?? '',
         String(settings.speed ?? 1),
+        settings.dictionary ?? '',
         text,
     ];
     return createHash('sha256').update(parts.join('|')).digest('hex');

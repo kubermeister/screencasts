@@ -45,6 +45,9 @@ describe('voiceLabel', () => {
         });
         expect(calm).toMatch(/^openai-gpt-4o-mini-tts-alloy-tone-[0-9a-f]{6}$/);
         expect(calm).not.toBe(brisk);
+        expect(
+            voiceLabel({ ...eleven, dictionary: 'fx6HVnfG1uF4X3nG10he/FyHvUx0OxFhV6vcv3I7P' }, 'Female option 1'),
+        ).toBe('elevenlabs-v4-female-option-1-dict-fx6hvn');
     });
 });
 

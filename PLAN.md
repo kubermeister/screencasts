@@ -192,6 +192,9 @@ Rules the schema and `src/script.ts` enforce:
   `_INSTRUCTIONS`, `_SPEED` variables; `src/voice/settings.ts`), so a change of voice applies to every
   video at once and a paid voice id never enters the repository (changed after Phase 11 at the
   maintainer's request). Kokoro needs nothing set; a paid provider's voice has no default.
+  `ELEVENLABS_DICTIONARY` (`<id>/<version id>`) names a pronunciation dictionary sent with every
+  line, which is how "Kubermeister" is said as koo·buh·mai·stuh without respelling it (added
+  2026-10-29: thirteen respellings had failed; an IPA phoneme rule on `eleven_v4` did not).
 - `voices`: optional, instead of `voice` (never both): providers to render side by side, each once,
   the first being the default (added after Phase 11 at the maintainer's request). `--voice all`
   renders every one, `--voice <label>` one of them; each is its own recording, since line lengths
