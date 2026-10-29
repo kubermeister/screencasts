@@ -1,0 +1,58 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: log-search
+title: Log search
+since: 0.10.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice: kokoro
+beats:
+  - id: intro
+    text: { kind: title, value: 'Find the lines that matter' }
+    say: 'The log console narrows a log to the lines that match, as plain text or as a pattern.'
+  - id: text
+    text:
+      kind: callout
+      value: 'Type, and only the lines that match stay'
+      anchor: filter
+      side: auto
+    say: 'Type a word, and only the lines that contain it stay, whatever their case.'
+    hold: 2.2s
+  - id: case
+    text:
+      kind: callout
+      value: 'Aa matches case: lowercase error is not ERROR'
+      anchor: case
+      side: auto
+    say: 'Press match case, and lowercase error no longer finds the capital ERROR the log writes.'
+    hold: 2.2s
+  - id: pattern
+    text: { kind: caption, value: 'As text, (ERROR|WARN) is just characters' }
+    say: 'Taken as text, a pattern is only characters, and nothing matches it.'
+    hold: 2s
+  - id: regex
+    text:
+      kind: callout
+      value: 'Press .* and the search reads as a regular expression'
+      anchor: regex
+      side: auto
+    say: 'Press dot star, and the search reads as a regular expression: every error and every warning.'
+    hold: 2.4s
+  - id: container
+    text:
+      kind: callout
+      value: 'The container picker chooses which container to read'
+      anchor: container
+      side: auto
+    say: 'The container picker chooses which of the pod containers to read.'
+    hold: 2.2s
+  - id: since
+    text:
+      kind: callout
+      value: 'Since and Tail set how far back the log is read'
+      anchor: since
+      side: auto
+    say: 'Since and tail set how far back the log is read, and how many lines.'
+    hold: 2.2s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

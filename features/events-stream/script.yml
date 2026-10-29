@@ -1,0 +1,42 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: events-stream
+title: Events stream
+since: 0.10.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice: kokoro
+beats:
+  - id: intro
+    text: { kind: title, value: 'What the cluster is saying, newest first' }
+    say: 'Kubermeister keeps the events of the cluster in one live stream, newest first.'
+  - id: stream
+    text:
+      kind: callout
+      value: 'Time, type, reason, the object named, and the message'
+      anchor: events
+      side: auto
+    say: 'Each row is the time, the type, the reason, the object the event names, and its message.'
+    hold: 2.4s
+  - id: warning
+    text:
+      kind: callout
+      value: 'A Warning stands out from the Normal rows'
+      anchor: warning
+      side: auto
+    say: 'A warning stands out from the normal rows, so a failing pull or a crash loop is seen at once.'
+    hold: 2.4s
+  - id: narrow
+    text: { kind: caption, value: 'Type in the search box to narrow the stream' }
+    say: 'Type a word in the search box, like back off, and only the events that say it stay.'
+    hold: 2s
+  - id: narrowed
+    text:
+      kind: callout
+      value: 'The image pull and the crash loop, side by side'
+      anchor: match
+      side: auto
+    say: 'The failing image pull and the crash loop now sit side by side, with everything else out of the way.'
+    hold: 2.4s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

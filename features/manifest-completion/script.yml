@@ -1,0 +1,52 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: manifest-completion
+title: Manifest completion
+since: 0.10.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice: kokoro
+beats:
+  - id: intro
+    text: { kind: title, value: 'Completion from the cluster’s own schema' }
+    say: 'The manifest editor completes field names and values from the schema the cluster publishes.'
+  - id: edit
+    text: { kind: caption, value: 'Edit opens the live manifest for writing' }
+    say: 'Press edit, and the live manifest opens for writing.'
+  - id: fields
+    zoom: completion
+    text:
+      kind: callout
+      value: 'Field names come from the schema of the kind you are editing'
+      anchor: completion
+      side: auto
+    say: 'Start a new line and type, and the editor offers the fields the schema knows here, each with its type.'
+    hold: 2.6s
+  - id: accept
+    text: { kind: caption, value: 'Enter accepts a field; a boolean offers true or false' }
+    say: 'Enter accepts the field with its colon, and a boolean field offers true or false.'
+    hold: 2s
+  - id: values
+    zoom: completion
+    text:
+      kind: callout
+      value: 'Where the schema fixes the values, only those are offered'
+      anchor: completion
+      side: auto
+    say: 'Where the schema fixes the values a field takes, only those are offered: here, Recreate or RollingUpdate.'
+    hold: 2.6s
+  - id: pick
+    text: { kind: caption, value: 'A letter or two, then Enter' }
+    say: 'A letter or two and enter, and the value is written as the schema spells it.'
+    hold: 2s
+  - id: describe
+    zoom: field-doc
+    text:
+      kind: callout
+      value: 'Hover a field, and the schema says what it is for'
+      anchor: field-doc
+      side: auto
+    say: 'Rest the pointer on a field, and the schema says what it holds and what it is for.'
+    hold: 2.6s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

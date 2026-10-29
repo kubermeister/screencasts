@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: owner-and-finalizers
+title: Owner and finalizers
+since: 0.10.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice: kokoro
+beats:
+  - id: intro
+    text: { kind: title, value: 'What put this here, and what holds it open' }
+    say: 'Every detail screen in Kubermeister says what put the object there, and what would hold its deletion open.'
+  - id: owner
+    text:
+      kind: callout
+      value: 'Owner: the Replica Set that controls this pod'
+      anchor: pod-owner
+      side: auto
+    say: 'On the labels tab of a pod, the object card names its owner: the replica set that controls it.'
+    hold: 2.4s
+  - id: follow
+    text:
+      kind: callout
+      value: 'Follow it: the Replica Set is owned by the Deployment'
+      anchor: replicaset-owner
+      side: auto
+    say: 'The owner is a link. Follow it, and the replica set names its own owner, the deployment.'
+    hold: 2.6s
+  - id: finalizers
+    text:
+      kind: callout
+      value: 'Finalizers: what would hold a deletion open'
+      anchor: finalizers
+      side: auto
+    say: 'The same card lists finalizers, like the protection every claim carries, so a deletion that hangs explains itself.'
+    hold: 2.8s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

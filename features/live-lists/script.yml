@@ -1,0 +1,39 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: live-lists
+title: Live lists
+since: 0.10.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice: kokoro
+# The scene scales ingest-worker up by one from outside the app and scales it back in cleanup.
+beats:
+  - id: intro
+    text: { kind: title, value: 'Lists stay live, without a reload' }
+    say: 'Every list in Kubermeister is kept live by a watch on the cluster, so a change made anywhere shows up on its own.'
+  - id: scale
+    text:
+      kind: callout
+      value: 'ingest-worker is scaled up from a terminal, outside the app'
+      anchor: row
+      side: auto
+    say: 'Here, ingest worker is scaled up from a terminal, outside the app.'
+    hold: 2s
+  - id: ready
+    text:
+      kind: callout
+      value: 'Ready changes in place; nothing was refreshed'
+      anchor: row
+      side: auto
+    say: 'The Ready column changes in place, as the new pod comes up. Nothing was refreshed.'
+    hold: 2.6s
+  - id: usage
+    text:
+      kind: callout
+      value: 'Pods and nodes also carry live CPU and memory usage'
+      anchor: usage
+      side: auto
+    say: 'Pods and nodes also carry live CPU and memory usage from metrics server, right in the list.'
+    hold: 2.4s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

@@ -1,0 +1,50 @@
+# yaml-language-server: $schema=../../schema/script.schema.json
+id: log-console
+title: Log console
+since: 0.10.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice: kokoro
+beats:
+  - id: intro
+    text: { kind: title, value: 'Read a log the way you like' }
+    say: 'The log console keeps its display toggles on the toolbar, so a log reads the way you like.'
+  - id: labels
+    text:
+      kind: callout
+      value: 'Each line carries the differing part of its pod name, in brackets'
+      anchor: log-lines
+      side: auto
+    say: 'Every line of a workload log is labelled with the part of its pod name that differs, in brackets.'
+    hold: 2.4s
+  - id: pod-names
+    text:
+      kind: callout
+      value: 'Hide pod names once the colours tell the pods apart'
+      anchor: display
+      side: auto
+    say: 'Turn Show pod names off, and the labels go, once the colours alone tell the pods apart.'
+    hold: 2.2s
+  - id: timestamps
+    text:
+      kind: callout
+      value: 'Show timestamps puts the time on every line'
+      anchor: display
+      side: auto
+    say: 'Show timestamps puts the time each line was written in front of it.'
+    hold: 2.2s
+  - id: wrap
+    text: { kind: caption, value: 'Wrap long lines folds a long line instead of scrolling sideways' }
+    say: 'Wrap long lines folds a long line onto the next, instead of scrolling the console sideways.'
+    hold: 2s
+  - id: copy
+    text:
+      kind: callout
+      value: 'Copy logs puts every line shown on the clipboard'
+      anchor: toast
+      side: auto
+    say: 'Copy logs puts every line the console shows on the clipboard, labels and timestamps included.'
+    hold: 2.4s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }
