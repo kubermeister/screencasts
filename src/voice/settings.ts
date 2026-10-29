@@ -33,6 +33,16 @@ function speed(value: string | undefined, name: string): number | undefined {
     return parsed;
 }
 
+/** A dictionary is named by its id and the version to apply, the two ids ElevenLabs answers a creation with. */
+function dictionary(value: string | undefined, name: string): string | undefined {
+    const raw = text(value);
+    if (raw === undefined) return undefined;
+    if (!/^[A-Za-z0-9]+\/[A-Za-z0-9]+$/.test(raw)) {
+        throw new Error(`${name} must be <dictionary id>/<version id>, not '${raw}'`);
+    }
+    return raw;
+}
+
 /** Only the keys that are set, so two settings that sound the same are also equal. */
 function compact(settings: VoiceSettings): VoiceSettings {
     return Object.fromEntries(Object.entries(settings).filter(([, value]) => value !== undefined)) as VoiceSettings;
@@ -60,6 +70,7 @@ export function voiceSettings(provider: VoiceProviderId, env: Env = process.env)
                 voice: required(env.ELEVENLABS_VOICE, 'ELEVENLABS_VOICE', "the Voice ID from the voice's page"),
                 model: text(env.ELEVENLABS_MODEL) ?? 'eleven_multilingual_v2',
                 speed: speed(env.ELEVENLABS_SPEED, 'ELEVENLABS_SPEED'),
+                dictionary: dictionary(env.ELEVENLABS_DICTIONARY, 'ELEVENLABS_DICTIONARY'),
             });
     }
 }

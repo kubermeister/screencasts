@@ -39,8 +39,8 @@ function modelLabel(model: string | undefined): string | undefined {
 
 /**
  * A voice's readable label. `name` is the voice's own name where the provider has one (ElevenLabs
- * ids say nothing); speed and OpenAI instructions are added only when they differ from the default,
- * so two voices that sound different never share a label.
+ * ids say nothing); speed, OpenAI instructions and a pronunciation dictionary are added only when
+ * set, so two voices that sound different never share a label.
  */
 export function voiceLabel(voice: VoiceSettings | undefined, name?: string): string {
     if (!voice) return 'silent';
@@ -52,6 +52,7 @@ export function voiceLabel(voice: VoiceSettings | undefined, name?: string): str
     if (voice.speed !== undefined && voice.speed !== 1) parts.push(`speed-${voice.speed}`);
     if (voice.instructions)
         parts.push(`tone-${createHash('sha256').update(voice.instructions).digest('hex').slice(0, 6)}`);
+    if (voice.dictionary) parts.push(`dict-${voice.dictionary.split('/')[0]!.slice(0, 6).toLowerCase()}`);
     return parts.filter((part) => part !== undefined && part !== '').join('-');
 }
 

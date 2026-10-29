@@ -32,6 +32,17 @@ describe('voiceSettings', () => {
         ).toEqual({ provider: 'elevenlabs', voice: 'Dhyh3AlgVPGDnVMGBox6', model: 'eleven_v4', speed: 1.1 });
     });
 
+    it('takes a pronunciation dictionary as id and version, and refuses any other shape', () => {
+        const env = {
+            ELEVENLABS_VOICE: 'Dhyh3AlgVPGDnVMGBox6',
+            ELEVENLABS_DICTIONARY: 'fx6HVnfG1uF4X3nG10he/FyHvUx0OxFhV6vcv3I7P',
+        };
+        expect(voiceSettings('elevenlabs', env).dictionary).toBe('fx6HVnfG1uF4X3nG10he/FyHvUx0OxFhV6vcv3I7P');
+        expect(() => voiceSettings('elevenlabs', { ...env, ELEVENLABS_DICTIONARY: 'fx6HVnfG1uF4X3nG10he' })).toThrow(
+            'ELEVENLABS_DICTIONARY',
+        );
+    });
+
     it.each(['1.5', '0.5', 'fast'])('refuses the speed %s', (speed) => {
         expect(() => voiceSettings('kokoro', { KOKORO_SPEED: speed })).toThrow('KOKORO_SPEED');
     });

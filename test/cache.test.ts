@@ -23,6 +23,7 @@ describe('voiceKey', () => {
         ['voice', { voice: 'am_adam' }],
         ['instructions', { instructions: 'calm' }],
         ['speed', { speed: 1.1 }],
+        ['dictionary', { dictionary: 'dict123/ver456' }],
     ])('changes with the %s', (_name, change) => {
         expect(voiceKey({ ...base, ...change }, 'Hello.')).not.toBe(voiceKey(base, 'Hello.'));
     });

@@ -163,13 +163,20 @@ ELEVENLABS_API_KEY=…
 ELEVENLABS_VOICE=Dhyh3AlgVPGDnVMGBox6   # the Voice ID, from the voice's page in ElevenLabs
 ELEVENLABS_MODEL=eleven_v4              # or eleven_v3; default eleven_multilingual_v2
 ELEVENLABS_SPEED=1.0                    # optional, 0.8–1.2
+ELEVENLABS_DICTIONARY=<id>/<version id> # optional, a pronunciation dictionary applied to every line
 ```
 
 - Any voice works: one from the Voice Library, or one you made with Voice Design or a voice clone.
   A Voice ID is not a secret; voices are private to the account that made them.
 - `eleven_v4` is the newest and most expressive model; `eleven_multilingual_v2` is the steadier
   older one. Both cost about one credit per character of `say` text.
-- An API key limited to Text to Speech is enough.
+- An API key limited to Text to Speech is enough; creating a pronunciation dictionary needs
+  `pronunciation_dictionaries_write` as well.
+- **How "Kubermeister" is said** comes from a pronunciation dictionary, not from respelling the word:
+  the text and the captions keep the real spelling. The maintainer's dictionary holds one IPA rule,
+  `Kubermeister` → `ˈkuːbəˌmaɪstə`, and `eleven_v4` honours it; its id and version go in
+  `ELEVENLABS_DICTIONARY`. A new dictionary is one `POST /v1/pronunciation-dictionaries/add-from-rules`
+  with a `phoneme` rule, and the answer's `id` and `version_id` are the two halves of the variable.
 
 **OpenAI** needs `OPENAI_API_KEY` and `OPENAI_VOICE` in `.env`:
 

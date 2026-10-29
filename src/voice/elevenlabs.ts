@@ -23,6 +23,9 @@ export class ElevenLabsProvider implements VoiceProvider {
         // Raw PCM rather than MP3: lossless, at the 24 kHz the voices are made at. 44.1 kHz PCM is
         // refused below the Pro plan, and would only resample the same voice.
         const url = `${API}/${encodeURIComponent(settings.voice)}?output_format=pcm_24000`;
+        // The dictionary says how a word is pronounced (Kubermeister, for one) without respelling it in
+        // the text, so the screen and the captions keep the real spelling.
+        const [dictionaryId, versionId] = settings.dictionary?.split('/') ?? [];
         const response = await this.fetch(url, {
             method: 'POST',
             headers: { 'xi-api-key': this.apiKey, 'content-type': 'application/json', accept: 'audio/pcm' },
@@ -30,6 +33,12 @@ export class ElevenLabsProvider implements VoiceProvider {
                 text,
                 model_id: settings.model,
                 ...(settings.speed !== undefined && { voice_settings: { speed: settings.speed } }),
+                ...(dictionaryId &&
+                    versionId && {
+                        pronunciation_dictionary_locators: [
+                            { pronunciation_dictionary_id: dictionaryId, version_id: versionId },
+                        ],
+                    }),
             }),
         });
         if (!response.ok) {
