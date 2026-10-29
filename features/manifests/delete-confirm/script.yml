@@ -1,0 +1,55 @@
+# yaml-language-server: $schema=../../../schema/script.schema.json
+id: delete-confirm
+title: Delete confirmation
+since: 0.10.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice: kokoro
+# Nothing here is deleted: the dialog is cancelled on the namespace and dismissed on the config map.
+beats:
+  - id: intro
+    text: { kind: title, value: 'A far-reaching delete asks for the name' }
+    say: 'Kubermeister asks you to type the name before it deletes anything that reaches beyond the object itself.'
+  - id: open
+    text: { kind: caption, value: 'Namespace › production › Delete' }
+    say: 'Open a namespace, and press Delete in its header.'
+  - id: ask
+    zoom: dialog
+    text:
+      kind: callout
+      value: 'Namespaces, nodes and CRDs must be typed by name'
+      anchor: dialog
+      side: auto
+    say: 'A namespace takes everything inside it, so the dialog says what goes, and asks for its name. Nodes, custom resource definitions and cluster-wide plumbing ask the same.'
+    hold: 2.4s
+  - id: wrong
+    zoom: dialog
+    text:
+      kind: callout
+      value: 'A wrong name leaves Delete disabled'
+      anchor: dialog
+      side: auto
+    say: 'Type the wrong name, and Delete stays disabled.'
+    hold: 2s
+  - id: right
+    zoom: dialog
+    text:
+      kind: callout
+      value: 'Only the exact name arms it. These kinds have no bulk delete.'
+      anchor: dialog
+      side: auto
+    say: 'Only the exact name arms it, and these kinds are never offered in a bulk delete.'
+    hold: 2.2s
+  - id: cancel
+    text: { kind: caption, value: 'Cancel, and nothing changes' }
+    say: 'Cancel, and nothing changes.'
+  - id: plain
+    text: { kind: caption, value: 'A plain kind gets a one-step confirmation' }
+    say: 'A plain kind, like a config map, gets a one-step confirmation instead.'
+    hold: 2s
+  - id: dismiss
+    text: { kind: caption, value: 'Nothing was deleted' }
+    say: 'Nothing was deleted.'
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

@@ -95,7 +95,7 @@ screencasts/
   package-lock.json
   bin/
     video.ts                 # CLI entry: `npm run video -- …`
-    new.ts                   # CLI entry: `npm run new -- <id>`
+    new.ts                   # CLI entry: `npm run new -- <group>/<id>`
   schema/
     script.schema.json       # JSON Schema (draft 2020-12) for script.yml
   src/
@@ -131,9 +131,10 @@ screencasts/
     fonts/                   # font files (licensed for embedding; see Phase 6)
     logo.svg
   features/
-    <feature-id>/
-      script.yml
-      scene.ts
+    <group>/                 # cluster · workloads · rollouts · logs · manifests · helm · navigation
+      <feature-id>/          # the id is unique across groups and is what every command names
+        script.yml
+        scene.ts
   overview/                  # same shape as a feature (Phase 10)
   hero/                      # same shape as a feature (Phase 10)
   test/
@@ -153,7 +154,7 @@ single source of truth; `src/script.ts` validates with it (use `ajv`) and derive
 types by hand to match (a unit test checks they agree on a sample).
 
 ```yaml
-# features/text-size/script.yml
+# features/navigation/text-size/script.yml
 id: text-size # must equal the folder name
 title: Text size # human title, used in the end card and logs
 since: 0.10.0 # app version that shipped it (semver, no leading v)
@@ -224,8 +225,8 @@ Rules the schema and `src/script.ts` enforce:
 ## 6. `scene.ts`
 
 ```ts
-// features/text-size/scene.ts
-import { defineScene } from '../../src/harness/scene';
+// features/navigation/text-size/scene.ts
+import { defineScene } from '../../../src/harness/scene';
 
 export default defineScene({
   // Before the video starts: not filmed.
@@ -281,8 +282,8 @@ npm run video -- <id> --fresh                # ignore every cache
 npm run video -- <id> --frames               # also write out/<id>/frames/NN-<beat>.png
 npm run video -- <id> --open                 # open the outputs when done (macOS `open`)
 npm run video -- <id> --theme light          # override the script's theme for this run
-npm run video -- --all                       # every folder in features/, overview/, hero/
-npm run new -- <id>                          # scaffold features/<id>/ from a template
+npm run video -- --all                       # every video in features/, then overview/ and hero/
+npm run new -- <group>/<id>                  # scaffold features/<group>/<id>/ from a template
 npm run cluster -- up|down|status            # manage the demo cluster explicitly
 ```
 
@@ -485,7 +486,7 @@ Acceptance:
 - `schema/script.schema.json` with every rule of section 5; `src/script.ts` loads YAML (`yaml`),
   validates (`ajv`, `allErrors`), and adds the cross-field rules (title first, end-card last,
   anchor presence, unique ids, `id` = folder).
-- `test/script.test.ts`: every `features/*/script.yml`, `overview/script.yml`,
+- `test/script.test.ts`: every `features/*/*/script.yml`, `overview/script.yml`,
   `hero/script.yml` validates; a set of invalid fixtures under `test/fixtures/` each fails with
   the expected message.
 - `test/scenes.test.ts`: for each feature, the `beat('…')` calls found in `scene.ts` (static

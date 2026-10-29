@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../../schema/script.schema.json
+id: keyboard-shortcuts
+title: Keyboard shortcuts
+since: 0.7.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice: kokoro
+beats:
+  - id: intro
+    text: { kind: title, value: 'Every screen a keystroke away' }
+    say: 'Kubermeister puts every domain and most actions on the keyboard.'
+  - id: domains
+    text: { kind: caption, value: '⌘1 to ⌘7 switch between the domains' }
+    say: 'Command one to command seven switch between the domains: overview, workloads, network, and the rest.'
+  - id: search
+    text: { kind: caption, value: '/ focuses the search of any list' }
+    say: 'Slash focuses the search of whatever list you are on.'
+  - id: sheet
+    text:
+      kind: callout
+      value: 'Press ? for the cheat sheet'
+      anchor: sheet
+      side: auto
+    say: 'And question mark opens the cheat sheet, with every shortcut on it.'
+    hold: 2.6s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

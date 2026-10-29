@@ -16,8 +16,8 @@ made from has changed since the last run.
 flowchart TB
     subgraph inputs["Inputs, committed in this repository"]
         direction LR
-        script["features/&lt;id&gt;/script.yml<br/>beats · on-screen text · say lines · voice"]
-        scene["features/&lt;id&gt;/scene.ts<br/>Playwright steps that mark each beat"]
+        script["features/&lt;group&gt;/&lt;id&gt;/script.yml<br/>beats · on-screen text · say lines · voice"]
+        scene["features/&lt;group&gt;/&lt;id&gt;/scene.ts<br/>Playwright steps that mark each beat"]
         brand["brand/<br/>colours · Geist font · logo"]
     end
     app[("../kubermeister<br/>the app, built (out/)")]
@@ -97,8 +97,8 @@ npm run video -- <id> --theme light          # override the script's theme for t
 npm run video -- <id> --voice <label>|all    # one of the script's voices, or every one (default: the first)
 npm run video -- <id> --variants             # list the variants made so far, with their sizes
 npm run video -- <id> --remove <variant>     # delete one variant's folder
-npm run video -- --all                       # every folder in features/, overview/, hero/
-npm run new -- <id>                          # scaffold features/<id>/ from a template
+npm run video -- --all                       # every video in features/, then overview/ and hero/
+npm run new -- <group>/<id>                  # scaffold features/<group>/<id>/ from a template
 npm run cluster -- up|down|status            # manage the demo cluster explicitly
 ```
 

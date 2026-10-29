@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../../schema/script.schema.json
+id: node-drain-plan
+title: Node drain plan
+since: 0.3.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice: kokoro
+beats:
+  - id: intro
+    text: { kind: title, value: 'Know what a drain will do first' }
+    say: 'Kubermeister tells you what draining a node will do before it does anything.'
+  - id: drain
+    text: { kind: caption, value: 'Nodes › orbit-node-01 › Drain' }
+    say: 'Open the node and press drain.'
+  - id: plan
+    text:
+      kind: callout
+      value: 'How many pods it would evict, before anything is written'
+      anchor: drain-plan
+      side: auto
+    say: 'The plan says how many pods would be evicted and how many are left alone, while nothing has been written yet. Disruption budgets are respected, and every pod is reported as it goes.'
+    hold: 2.8s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

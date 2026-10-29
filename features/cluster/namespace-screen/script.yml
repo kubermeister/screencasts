@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=../../../schema/script.schema.json
+id: namespace-screen
+title: Namespace screen
+since: 0.3.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice: kokoro
+beats:
+  - id: intro
+    text: { kind: title, value: 'A namespace as a roll-up' }
+    say: 'Kubermeister gives a namespace a screen of its own: what lives in it, and what it may use.'
+  - id: contents
+    text:
+      kind: callout
+      value: 'Contents counts every kind; each count is a link'
+      anchor: counts
+      side: auto
+    say: 'Contents counts what lives in it, kind by kind, and each count links to that list.'
+    hold: 2.4s
+  - id: quotas
+    text:
+      kind: callout
+      value: 'Budgets: what is used against what is allowed'
+      anchor: quotas
+      side: auto
+    say: 'Budgets holds its quotas, each as what is used against what is allowed,'
+    hold: 2.2s
+  - id: limits
+    text:
+      kind: callout
+      value: 'And the limit ranges new pods inherit'
+      anchor: limits
+      side: auto
+    say: 'and the limit ranges that new pods inherit when they ask for nothing.'
+    hold: 2.2s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

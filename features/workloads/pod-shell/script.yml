@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../../schema/script.schema.json
+id: pod-shell
+title: Pod shell
+since: 0.2.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice: kokoro
+beats:
+  - id: intro
+    text: { kind: title, value: 'A shell that belongs to its pod' }
+    say: 'Kubermeister opens a shell inside a pod, right where the pod is.'
+  - id: open
+    text: { kind: caption, value: 'Pod › Shell opens an exec session' }
+    say: "Open a pod and press the shell tab. The session starts in the pod's own container."
+  - id: commands
+    text: { kind: caption, value: 'A real terminal: the files the pod sees, as it sees them' }
+    say: 'It is a real terminal. Here are the files the pod sees, mounted from its config map.'
+  - id: closes
+    text:
+      kind: callout
+      value: 'The session ends when you leave the pod'
+      anchor: terminal
+      side: auto
+    say: 'The shell belongs to its pod, and it ends when you leave, so a terminal is never left attached to a cluster nobody is watching.'
+    hold: 2.4s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

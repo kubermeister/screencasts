@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../../schema/script.schema.json
+id: workload-logs
+title: Workload logs
+since: 0.4.8
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice: kokoro
+beats:
+  - id: intro
+    text: { kind: title, value: 'Every pod of a deployment, one log' }
+    say: 'Kubermeister reads the logs of every pod a deployment owns as one stream.'
+  - id: interleaved
+    text:
+      kind: callout
+      value: 'Lines from all pods, interleaved and coloured by pod'
+      anchor: log-lines
+      side: auto
+    say: 'Lines from all the pods arrive interleaved, in order, and each pod has its own colour.'
+    hold: 2.4s
+  - id: highlight
+    text: { kind: caption, value: 'Highlight matches keeps every line in context' }
+    say: 'Switch to highlight matches, and a filter marks what it finds instead of hiding the rest.'
+  - id: errors
+    text:
+      kind: callout
+      value: 'Each ERROR lights up where it happened'
+      anchor: filter
+      side: auto
+    say: 'Type error, and each one lights up right where it happened, with the lines around it still in view.'
+    hold: 2.4s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

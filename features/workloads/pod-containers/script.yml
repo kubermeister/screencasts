@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../../schema/script.schema.json
+id: pod-containers
+title: Pod containers
+since: 0.10.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice: kokoro
+beats:
+  - id: intro
+    text: { kind: title, value: 'Every container of a pod, and what each is for' }
+    say: 'Kubermeister lists every container of a pod, and says what part each one plays.'
+  - id: overview
+    text: { kind: caption, value: 'Pod › Overview › Containers' }
+    say: 'The Overview tab of a pod lists its containers in the order they matter: init steps first, then the app itself.'
+  - id: role
+    text:
+      kind: callout
+      value: 'Init steps are marked: they ran before the app started'
+      anchor: role-badge
+      side: auto
+    say: 'An init container is marked as one, since it ran to completion before the app containers started.'
+    hold: 2.4s
+  - id: usage
+    zoom: usage
+    text:
+      kind: callout
+      value: 'Usage beside the request, for each container'
+      anchor: usage
+      side: auto
+    say: 'Each container shows its usage beside what it requested, so you see how much of its own share it is using.'
+    hold: 2.6s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

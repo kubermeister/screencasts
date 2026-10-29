@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=../../../schema/script.schema.json
+id: workload-pods
+title: Workload pods
+since: 0.10.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice: kokoro
+beats:
+  - id: intro
+    text: { kind: title, value: 'From a workload to its pods, and back' }
+    say: 'Kubermeister links a workload to the pods it runs, and each pod back to its workload.'
+  - id: pods
+    text:
+      kind: callout
+      value: 'Owned through owner references, not matching labels'
+      anchor: owned-pods
+      side: auto
+    say: 'The Pods tab of a deployment lists the pods it actually owns, resolved through owner references rather than labels.'
+    hold: 2.4s
+  - id: open
+    text: { kind: caption, value: 'Each pod links to its own page' }
+    say: 'Open one, and its page says who runs it.'
+  - id: owner
+    text:
+      kind: callout
+      value: 'Controlled by: the ReplicaSet, then the Deployment behind it'
+      anchor: owner-chain
+      side: auto
+    say: 'Controlled by reads upwards: the replica set that made the pod, and the deployment behind that.'
+    hold: 2.4s
+  - id: back
+    text: { kind: caption, value: 'Follow the link back up to the Deployment' }
+    say: 'Follow the link, and you are back on the deployment.'
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

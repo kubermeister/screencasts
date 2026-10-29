@@ -1,0 +1,42 @@
+# yaml-language-server: $schema=../../../schema/script.schema.json
+id: cluster-summary
+title: Cluster summary
+since: 0.2.0
+formats: [video, reel]
+theme: dark
+# Kokoro only: it runs locally for free. Paid voices (ElevenLabs, OpenAI) are added by the maintainer.
+voice: kokoro
+beats:
+  - id: intro
+    text: { kind: title, value: 'Is anything obviously wrong, at a glance' }
+    say: 'Kubermeister opens on one screen that answers whether anything is obviously wrong.'
+  - id: usage
+    zoom: metrics
+    text: { kind: caption, value: 'Nodes, CPU and memory, sampled while the app is open' }
+    say: 'Node health, and CPU and memory usage, sampled from metrics server while the app is open.'
+  - id: events
+    text:
+      kind: callout
+      value: 'The latest events, cluster-wide'
+      anchor: events
+      side: auto
+    say: 'The latest events, from the whole cluster.'
+    hold: 2s
+  - id: alerts
+    text:
+      kind: callout
+      value: 'Alerts derived from the cluster: crash loops, pulls, pending'
+      anchor: alerts
+      side: auto
+    say: 'And alerts derived from cluster state: crash loops, image pulls that fail, pods that stay pending, claims that never bind. Rules the app decides, with nothing to tune.'
+    hold: 2.6s
+  - id: live
+    text:
+      kind: callout
+      value: 'A cordoned node shows up within seconds'
+      anchor: cordoned
+      side: auto
+    say: 'It is live: cordon a node, and the alert is there within seconds.'
+    hold: 2.4s
+  - id: outro
+    text: { kind: end-card, value: 'kubermeister.dev' }

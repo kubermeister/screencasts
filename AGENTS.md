@@ -37,7 +37,7 @@ features. `PLAN.md` is the design; read it before changing anything structural.
 ## Adding a feature video
 
 ```sh
-npm run new -- <id>                  # scaffolds features/<id>/script.yml and scene.ts
+npm run new -- <group>/<id>          # scaffolds features/<group>/<id>/script.yml and scene.ts
 npm run video -- <id> --frames       # record, voice, render; one PNG per beat in out/<id>/frames/
 ```
 
